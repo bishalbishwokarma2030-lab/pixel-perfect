@@ -14,7 +14,255 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      clients: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      consignments: {
+        Row: {
+          advance_amount: number | null
+          bill_charge: number | null
+          bill_no: string
+          calculation_factor: string | null
+          calculation_rate: number | null
+          cartoon: number | null
+          cbm: number | null
+          client_name: string | null
+          client_phone: string | null
+          created_at: string
+          ctn_no: string | null
+          current_station: string | null
+          description: string | null
+          end_station: string
+          expected_delivery_date: string | null
+          freight: number | null
+          goods_advance: number | null
+          grand_total: number | null
+          id: string
+          image_url: string | null
+          insurance: number | null
+          loading_fee: number | null
+          local_freight: number | null
+          marka: string
+          package_type: string | null
+          packaging_fee: number | null
+          payment_amount: number | null
+          payment_of_goods: number | null
+          payment_status: string | null
+          quantity: number | null
+          remarks: string | null
+          serial_prefix: string | null
+          start_date: string
+          start_station: string
+          status: string | null
+          sub_total: number | null
+          tax: number | null
+          trade_mode: string | null
+          unloading_fee: number | null
+          updated_at: string
+          value_of_goods: number | null
+          weight: number | null
+        }
+        Insert: {
+          advance_amount?: number | null
+          bill_charge?: number | null
+          bill_no: string
+          calculation_factor?: string | null
+          calculation_rate?: number | null
+          cartoon?: number | null
+          cbm?: number | null
+          client_name?: string | null
+          client_phone?: string | null
+          created_at?: string
+          ctn_no?: string | null
+          current_station?: string | null
+          description?: string | null
+          end_station: string
+          expected_delivery_date?: string | null
+          freight?: number | null
+          goods_advance?: number | null
+          grand_total?: number | null
+          id?: string
+          image_url?: string | null
+          insurance?: number | null
+          loading_fee?: number | null
+          local_freight?: number | null
+          marka: string
+          package_type?: string | null
+          packaging_fee?: number | null
+          payment_amount?: number | null
+          payment_of_goods?: number | null
+          payment_status?: string | null
+          quantity?: number | null
+          remarks?: string | null
+          serial_prefix?: string | null
+          start_date: string
+          start_station: string
+          status?: string | null
+          sub_total?: number | null
+          tax?: number | null
+          trade_mode?: string | null
+          unloading_fee?: number | null
+          updated_at?: string
+          value_of_goods?: number | null
+          weight?: number | null
+        }
+        Update: {
+          advance_amount?: number | null
+          bill_charge?: number | null
+          bill_no?: string
+          calculation_factor?: string | null
+          calculation_rate?: number | null
+          cartoon?: number | null
+          cbm?: number | null
+          client_name?: string | null
+          client_phone?: string | null
+          created_at?: string
+          ctn_no?: string | null
+          current_station?: string | null
+          description?: string | null
+          end_station?: string
+          expected_delivery_date?: string | null
+          freight?: number | null
+          goods_advance?: number | null
+          grand_total?: number | null
+          id?: string
+          image_url?: string | null
+          insurance?: number | null
+          loading_fee?: number | null
+          local_freight?: number | null
+          marka?: string
+          package_type?: string | null
+          packaging_fee?: number | null
+          payment_amount?: number | null
+          payment_of_goods?: number | null
+          payment_status?: string | null
+          quantity?: number | null
+          remarks?: string | null
+          serial_prefix?: string | null
+          start_date?: string
+          start_station?: string
+          status?: string | null
+          sub_total?: number | null
+          tax?: number | null
+          trade_mode?: string | null
+          unloading_fee?: number | null
+          updated_at?: string
+          value_of_goods?: number | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      shipments: {
+        Row: {
+          arrival_approved_by: string | null
+          consignment_ids: Json | null
+          container_image_url: string | null
+          container_name: string
+          container_type: string | null
+          created_at: string
+          dispatched_by: string | null
+          driver_name: string | null
+          driver_phone: string | null
+          end_station: string
+          id: string
+          lot_no: string
+          remarks: string | null
+          start_station: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          arrival_approved_by?: string | null
+          consignment_ids?: Json | null
+          container_image_url?: string | null
+          container_name: string
+          container_type?: string | null
+          created_at?: string
+          dispatched_by?: string | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          end_station: string
+          id?: string
+          lot_no: string
+          remarks?: string | null
+          start_station: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          arrival_approved_by?: string | null
+          consignment_ids?: Json | null
+          container_image_url?: string | null
+          container_name?: string
+          container_type?: string | null
+          created_at?: string
+          dispatched_by?: string | null
+          driver_name?: string | null
+          driver_phone?: string | null
+          end_station?: string
+          id?: string
+          lot_no?: string
+          remarks?: string | null
+          start_station?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stations: {
+        Row: {
+          cbm_rate: number | null
+          code: string
+          created_at: string
+          id: string
+          location: string | null
+          name: string
+          phone: string | null
+          updated_at: string
+          weight_rate: number | null
+        }
+        Insert: {
+          cbm_rate?: number | null
+          code: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          name: string
+          phone?: string | null
+          updated_at?: string
+          weight_rate?: number | null
+        }
+        Update: {
+          cbm_rate?: number | null
+          code?: string
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+          weight_rate?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
