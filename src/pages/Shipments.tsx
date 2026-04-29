@@ -38,6 +38,11 @@ const Shipments = () => {
   const [, setStations] = useState<Station[]>([]);
   const [consignments, setConsignments] = useState<Consignment[]>([]);
   const [search, setSearch] = useState("");
+  const [fStation, setFStation] = useState(CLEAR);
+  const [fStatus, setFStatus] = useState(CLEAR);
+  const [fDispatched, setFDispatched] = useState(CLEAR);
+  const [fStartDate, setFStartDate] = useState("");
+  const [fEndDate, setFEndDate] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Shipment | null>(null);
   const [form, setForm] = useState<any>(empty);
@@ -86,7 +91,20 @@ const Shipments = () => {
     .catch((e) => toast.error(e.message));
   useEffect(() => { load(); }, []);
 
-  const filtered = items.filter((s) => [s.lot_no, s.container_name, s.driver_name, s.start_station, s.end_station].filter(Boolean).join(" ").toLowerCase().includes(search.toLowerCase()));
+  const dispatchedOpts = useMemo(() => Array.from(new Set(items.map((i) => i.dispatched_by).filter(Boolean) as string[])), [items]);
+  const stationOpts = useMemo(() => Array.from(new Set([...STATION_OPTIONS, ...items.flatMap((i) => [i.start_station, i.end_station])].filter(Boolean) as string[])), [items]);
+
+  const filtered = items.filter((s) => {
+    const hay = [s.lot_no, s.container_name, s.driver_name, s.start_station, s.end_station].filter(Boolean).join(" ").toLowerCase();
+    if (search && !hay.includes(search.toLowerCase())) return false;
+    if (fStation !== CLEAR && s.start_station !== fStation && s.end_station !== fStation) return false;
+    if (fStatus !== CLEAR && s.status !== fStatus) return false;
+    if (fDispatched !== CLEAR && s.dispatched_by !== fDispatched) return false;
+    const created = (s.created_at || "").slice(0, 10);
+    if (fStartDate && created < fStartDate) return false;
+    if (fEndDate && created > fEndDate) return false;
+    return true;
+  });
 
   const toggleRow = (id: string) => setSelectedIds((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
   const toggleAll = (checked: boolean) => setSelectedIds(checked ? filtered.map((s) => s.id) : []);
@@ -147,7 +165,6 @@ const Shipments = () => {
         breadcrumbs={[{ label: "Home" }, { label: "Shipments" }, { label: "Dispatched Shipments" }]}
         actions={
           <>
-            <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className="pl-9 w-64" /></div>
             <Button variant="outline" onClick={exportSelected} disabled={selectedIds.length === 0}><FileDown className="mr-1 h-4 w-4" />Export Selected ({selectedIds.length})</Button>
             <Button variant="outline" onClick={exportAll}><FileDown className="mr-1 h-4 w-4" />Export All</Button>
             <Button onClick={openCreate} className="bg-gradient-primary text-primary-foreground"><Plus className="mr-1 h-4 w-4" />Create Shipment</Button>
@@ -155,7 +172,33 @@ const Shipments = () => {
         }
       />
       <div className="p-6">
-        <div className="mb-3 text-sm text-muted-foreground">Showing {filtered.length} of {items.length}</div>
+        {/* Filter bar */}
+        <div className="mb-4 grid grid-cols-2 gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-3 lg:grid-cols-6">
+          <SF label="Search">
+            <div className="relative"><Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="eg. Search…" className="pl-7 h-9" /></div>
+          </SF>
+          <SF label="Station">
+            <Select value={fStation} onValueChange={setFStation}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="All" /></SelectTrigger>
+              <SelectContent><SelectItem value={CLEAR}>All</SelectItem>{stationOpts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+            </Select>
+          </SF>
+          <SF label="Status">
+            <Select value={fStatus} onValueChange={setFStatus}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="All" /></SelectTrigger>
+              <SelectContent><SelectItem value={CLEAR}>All</SelectItem><SelectItem value="In Transit">In Transit</SelectItem><SelectItem value="Delivered">Delivered</SelectItem><SelectItem value="Pending">Pending</SelectItem></SelectContent>
+            </Select>
+          </SF>
+          <SF label="Dispatched By">
+            <Select value={fDispatched} onValueChange={setFDispatched}>
+              <SelectTrigger className="h-9"><SelectValue placeholder="All" /></SelectTrigger>
+              <SelectContent><SelectItem value={CLEAR}>All</SelectItem>{dispatchedOpts.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+            </Select>
+          </SF>
+          <SF label="Start Date"><Input type="date" value={fStartDate} onChange={(e) => setFStartDate(e.target.value)} className="h-9" /></SF>
+          <SF label="End Date"><Input type="date" value={fEndDate} onChange={(e) => setFEndDate(e.target.value)} className="h-9" /></SF>
+        </div>
+        <div className="mb-3 text-sm text-muted-foreground">Showing Results: 1-{filtered.length} of {items.length}</div>
         <DataTable<Shipment>
           data={filtered}
           selectable
@@ -358,8 +401,16 @@ const Shipments = () => {
 function F({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><Label className="mb-1.5 block text-sm">{label}</Label>{children}</div>;
 }
+function SF({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div><Label className="mb-1 block text-xs text-primary font-medium">{label}</Label>{children}</div>;
+}
 function Info({ label, value }: { label: string; value: string }) {
-  return <div><div className="text-sm text-muted-foreground">{label}</div><div className="font-medium">{value}</div></div>;
+  return (
+    <div className="rounded-lg border border-border bg-gradient-to-br from-card to-accent/20 p-3 shadow-sm transition-all hover:shadow-md hover:border-primary/40">
+      <div className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">{label}</div>
+      <div className="mt-1 font-semibold text-foreground break-words">{value || "—"}</div>
+    </div>
+  );
 }
 
 function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
@@ -405,7 +456,7 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
                 {["Date","Consignment No.","Brand","Description","Cartoon","CTN No.","CBM","Weight","Freight","Local Freight","Bill Charge","Insurance","Other Charges","Tax","Total","Remarks","Actions"].map((h) => {
                   const isBrand = h === "Brand", isCartoon = h === "Cartoon", isActions = h === "Actions";
                   return (
-                    <th key={h} className={`px-3 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap ${isBrand ? "!bg-amber-500 !text-white" : ""} ${isCartoon ? "!bg-emerald-500 !text-white" : ""} ${isActions ? "sticky right-0 z-40 bg-gradient-primary" : ""}`}>{h}</th>
+                    <th key={h} className={`px-3 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap ${isBrand ? "!bg-amber-500 !text-white" : ""} ${isCartoon ? "!bg-emerald-500 !text-white" : ""} ${isActions ? "sticky right-0 z-40 bg-gradient-primary shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.25)]" : ""}`}>{h}</th>
                   );
                 })}
               </tr>
@@ -433,7 +484,7 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
                     <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.tax || 0))}</td>
                     <td className="px-3 py-2 text-right font-semibold border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.grand_total || 0))}</td>
                     <td className="px-3 py-2 max-w-[180px] truncate border-t border-border bg-card group-hover:bg-accent/30" title={c.remarks || ""}>{c.remarks || "—"}</td>
-                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30 sticky right-0 z-20"><ActionButtons onView={() => onView(c)} onEdit={() => onEdit(c)} onDelete={() => onDelete(c)} /></td>
+                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30 sticky right-0 z-20 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.15)]"><ActionButtons onView={() => onView(c)} onEdit={() => onEdit(c)} onDelete={() => onDelete(c)} /></td>
                   </tr>
                 );
               })}
