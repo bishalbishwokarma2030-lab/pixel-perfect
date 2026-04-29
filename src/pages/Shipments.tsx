@@ -456,7 +456,7 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
                 {["Date","Consignment No.","Brand","Description","Cartoon","CTN No.","CBM","Weight","Freight","Local Freight","Bill Charge","Insurance","Other Charges","Tax","Total","Remarks","Actions"].map((h) => {
                   const isBrand = h === "Brand", isCartoon = h === "Cartoon", isActions = h === "Actions";
                   return (
-                    <th key={h} className={`px-3 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap ${isBrand ? "!bg-amber-500 !text-white" : ""} ${isCartoon ? "!bg-emerald-500 !text-white" : ""} ${isActions ? "sticky right-0 z-40 bg-gradient-primary" : ""}`}>{h}</th>
+                    <th key={h} className={`px-3 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap ${isBrand ? "!bg-amber-500 !text-white" : ""} ${isCartoon ? "!bg-emerald-500 !text-white" : ""} ${isActions ? "sticky right-0 z-40 bg-gradient-primary shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.25)]" : ""}`}>{h}</th>
                   );
                 })}
               </tr>
@@ -484,7 +484,7 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
                     <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.tax || 0))}</td>
                     <td className="px-3 py-2 text-right font-semibold border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.grand_total || 0))}</td>
                     <td className="px-3 py-2 max-w-[180px] truncate border-t border-border bg-card group-hover:bg-accent/30" title={c.remarks || ""}>{c.remarks || "—"}</td>
-                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30 sticky right-0 z-20"><ActionButtons onView={() => onView(c)} onEdit={() => onEdit(c)} onDelete={() => onDelete(c)} /></td>
+                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30 sticky right-0 z-20 shadow-[-6px_0_8px_-6px_rgba(0,0,0,0.15)]"><ActionButtons onView={() => onView(c)} onEdit={() => onEdit(c)} onDelete={() => onDelete(c)} /></td>
                   </tr>
                 );
               })}
