@@ -80,7 +80,7 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; w
           <FillText className="left-[752px] top-[608px] w-[303px] text-[17px] font-semibold" value={text.advance} />
           <FillText className="left-[1055px] top-[608px] w-[151px] text-[18px] font-bold text-[#e11d1d]" value={text.total} />
           <FillText className="left-[1206px] top-[608px] w-[215px] text-[17px] font-semibold" value={text.freightOnDelivery} />
-          <FillText className="left-[1421px] top-[608px] w-[155px] text-[17px] font-semibold" value={text.tradeMode} />
+          <FillText className="left-[1421px] top-[608px] w-[155px] text-[17px] font-bold text-[#e11d1d]" value={text.tradeMode} />
 
           {text.totalWords && (
             <div className="absolute left-[278px] top-[640px] flex h-[43px] w-[1298px] items-center justify-center px-6 text-center text-[18px] font-bold leading-none text-black">
@@ -105,11 +105,62 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; w
           <div className="absolute left-[1206px] top-[683px] h-[54px] w-[2px] bg-black" />
           <div className="absolute left-[1576px] top-[683px] h-[54px] w-[2px] bg-black" />
           <div className="absolute left-[1206px] top-[736px] h-[2px] w-[370px] bg-black" />
+
+          {/* English translation overlay — masks Chinese labels with white blocks and prints English equivalents */}
+          <EnLabel className="left-[180px] top-[195px] w-[110px] h-[40px]" text="Bill No." />
+          <EnLabel className="left-[180px] top-[275px] w-[110px] h-[40px]" text="Date" />
+          <EnLabel className="left-[180px] top-[354px] w-[110px] h-[40px]" text="Brand" />
+          <EnLabel className="left-[955px] top-[195px] w-[110px] h-[40px]" text="From" />
+          <EnLabel className="left-[955px] top-[275px] w-[110px] h-[40px]" text="To" />
+          <EnLabel className="left-[955px] top-[354px] w-[110px] h-[40px]" text="Phone" />
+
+          {/* Column headers row above first data row (y≈480) */}
+          <EnHeader className="left-[4px] top-[483px] w-[274px]" text="Description" />
+          <EnHeader className="left-[278px] top-[483px] w-[101px]" text="Pkg Type" />
+          <EnHeader className="left-[379px] top-[483px] w-[110px]" text="Qty" />
+          <EnHeader className="left-[489px] top-[483px] w-[107px]" text="CTN No." />
+          <EnHeader className="left-[596px] top-[483px] w-[158px]" text="Packaging" />
+          <EnHeader className="left-[754px] top-[483px] w-[87px]" text="Loading" />
+          <EnHeader className="left-[841px] top-[483px] w-[113px]" text="Unloading" />
+          <EnHeader className="left-[954px] top-[483px] w-[102px]" text="CBM" />
+          <EnHeader className="left-[1056px] top-[483px] w-[153px]" text="Weight" />
+          <EnHeader className="left-[1209px] top-[483px] w-[112px]" text="Tax" />
+          <EnHeader className="left-[1321px] top-[483px] w-[99px]" text="Freight" />
+          <EnHeader className="left-[1420px] top-[483px] w-[157px]" text="Local Freight" />
+
+          {/* Headers above second data row (y≈569) */}
+          <EnHeader className="left-[0px] top-[569px] w-[277px]" text="Value of Goods" />
+          <EnHeader className="left-[277px] top-[569px] w-[211px]" text="Insurance" />
+          <EnHeader className="left-[488px] top-[569px] w-[264px]" text="Bill Charge" />
+          <EnHeader className="left-[752px] top-[569px] w-[303px]" text="Advance" />
+          <EnHeader className="left-[1055px] top-[569px] w-[151px]" text="Total" />
+          <EnHeader className="left-[1206px] top-[569px] w-[215px]" text="Freight on Delivery" />
+          <EnHeader className="left-[1421px] top-[569px] w-[155px]" text="Trade Mode" />
+
+          {/* Footer labels (remarks / signature) row header at y≈660 */}
+          <EnHeader className="left-[278px] top-[665px] w-[777px]" text="Remarks" />
+          <EnHeader className="left-[1206px] top-[665px] w-[370px]" text="Received By" />
         </div>
       </div>
     </div>
   );
 });
+
+function EnLabel({ className, text }: { className: string; text: string }) {
+  return (
+    <div className={`absolute flex items-center justify-center bg-white text-[14px] font-semibold text-black border border-black/10 ${className}`}>
+      {text}
+    </div>
+  );
+}
+
+function EnHeader({ className, text }: { className: string; text: string }) {
+  return (
+    <div className={`absolute flex h-[18px] items-center justify-center bg-white text-[12px] font-bold uppercase tracking-wide text-[#2ea24f] ${className}`}>
+      {text}
+    </div>
+  );
+}
 
 function FillText({ className, value }: { className: string; value: string }) {
   if (!value) return null;
