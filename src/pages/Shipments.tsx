@@ -401,8 +401,16 @@ const Shipments = () => {
 function F({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><Label className="mb-1.5 block text-sm">{label}</Label>{children}</div>;
 }
+function SF({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div><Label className="mb-1 block text-xs text-primary font-medium">{label}</Label>{children}</div>;
+}
 function Info({ label, value }: { label: string; value: string }) {
-  return <div><div className="text-sm text-muted-foreground">{label}</div><div className="font-medium">{value}</div></div>;
+  return (
+    <div className="rounded-lg border border-border bg-gradient-to-br from-card to-accent/20 p-3 shadow-sm transition-all hover:shadow-md hover:border-primary/40">
+      <div className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">{label}</div>
+      <div className="mt-1 font-semibold text-foreground break-words">{value || "—"}</div>
+    </div>
+  );
 }
 
 function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
