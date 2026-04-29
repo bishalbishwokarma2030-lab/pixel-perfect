@@ -180,12 +180,12 @@ const Consignments = () => {
         <div className="mb-4 grid grid-cols-2 gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-4 lg:grid-cols-8">
           <FilterField label="Search"><div className="relative"><Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="eg. Search…" className="pl-7 h-9" /></div></FilterField>
           <FilterField label="BillNo"><Input value={billNo} onChange={(e) => setBillNo(e.target.value)} placeholder="eg. 11" className="h-9" /></FilterField>
-          <SelectField label="Brand" value={brand} onChange={setBrand} options={brandOpts} />
+          <ComboField label="Brand" value={brand} onChange={setBrand} options={brandOpts} listId="brand-opts" />
           <SelectField label="Start Station" value={startStation} onChange={setStartStation} options={stationOpts} />
           <SelectField label="Current At" value={currentAt} onChange={setCurrentAt} options={stationOpts} />
           <SelectField label="End Station" value={endStation} onChange={setEndStation} options={stationOpts} />
-          <SelectField label="Client" value={client} onChange={setClient} options={clientOpts} />
-          <SelectField label="Status" value={status} onChange={setStatus} options={["Pending", "In Transit", "Delivered", "Cancelled"]} />
+          <ComboField label="Client" value={client} onChange={setClient} options={clientOpts} listId="client-opts" />
+          <ComboField label="Status" value={status} onChange={setStatus} options={["Pending", "In Transit", "Delivered", "Cancelled"]} listId="status-opts" />
           <SelectField label="Payment Status" value={paymentStatus} onChange={setPaymentStatus} options={["Unpaid", "Partial", "Paid"]} />
           <FilterField label="Order"><Select value={order} onValueChange={(v) => setOrder(v as any)}><SelectTrigger className="h-9"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="DESC">DESC</SelectItem><SelectItem value="ASC">ASC</SelectItem></SelectContent></Select></FilterField>
           <FilterField label="Start Date"><Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9" /></FilterField>
