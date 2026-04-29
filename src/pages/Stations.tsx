@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
 import { DataTable } from "@/components/DataTable";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { api, Station } from "@/lib/store";
+import { exportToExcel } from "@/lib/excel";
 
 const empty = { name: "", code: "", phone: "", location: "", cbm_rate: 0, weight_rate: 0 };
 
@@ -20,6 +21,7 @@ const Stations = () => {
   const [editing, setEditing] = useState<Station | null>(null);
   const [form, setForm] = useState<any>(empty);
   const [viewing, setViewing] = useState<Station | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const load = () => api.stations.list().then(setItems).catch((e) => toast.error(e.message));
   useEffect(() => { load(); }, []);
@@ -45,6 +47,19 @@ const Stations = () => {
     try { await api.stations.remove(s.id); toast.success("Deleted"); load(); } catch (e: any) { toast.error(e.message); }
   };
 
+  const toggleRow = (id: string) => setSelectedIds((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
+  const toggleAll = (checked: boolean) => setSelectedIds(checked ? filtered.map((s) => s.id) : []);
+  const stationRow = (s: Station) => ({ Name: s.name, Code: s.code, Phone: s.phone, Location: s.location, "CBM Rate": s.cbm_rate, "Weight Rate": s.weight_rate, Created: s.created_at });
+  const exportSelected = () => {
+    const rows = items.filter((s) => selectedIds.includes(s.id));
+    if (!rows.length) return toast.error("Select at least one station");
+    exportToExcel(rows.map(stationRow), `stations-selected-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+  const exportAll = () => {
+    if (!items.length) return toast.error("Nothing to export");
+    exportToExcel(items.map(stationRow), `stations-all-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
   return (
     <div>
       <PageHeader
@@ -53,6 +68,8 @@ const Stations = () => {
         actions={
           <>
             <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className="pl-9 w-64" /></div>
+            <Button variant="outline" onClick={exportSelected} disabled={selectedIds.length === 0}><FileDown className="mr-1 h-4 w-4" />Export Selected ({selectedIds.length})</Button>
+            <Button variant="outline" onClick={exportAll}><FileDown className="mr-1 h-4 w-4" />Export All</Button>
             <Button onClick={openCreate} className="bg-gradient-primary text-primary-foreground"><Plus className="mr-1 h-4 w-4" />Create</Button>
           </>
         }
@@ -61,6 +78,10 @@ const Stations = () => {
         <div className="mb-3 text-sm text-muted-foreground">Showing {filtered.length} of {items.length}</div>
         <DataTable<Station>
           data={filtered}
+          selectable
+          selectedIds={selectedIds}
+          onToggleRow={toggleRow}
+          onToggleAll={toggleAll}
           columns={[
             { key: "#", header: "#", render: (_r, i) => <span className="text-muted-foreground">{i + 1}</span> },
             { key: "name", header: "Name", render: (r) => <span className="font-medium">{r.name}</span> },
