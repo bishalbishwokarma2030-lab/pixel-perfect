@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Search, Copy, Download, Pencil, Printer, ZoomIn, ZoomOut, Maximize2, Languages } from "lucide-react";
+import { Plus, Search, Copy, Download, Pencil, Printer, ZoomIn, ZoomOut, Maximize2, Languages, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
 import { PageHeader } from "@/components/PageHeader";
@@ -17,6 +17,7 @@ import { api, Shipment, Station, Consignment } from "@/lib/store";
 import { ConsignmentForm } from "@/components/ConsignmentForm";
 import { ConsignmentReceipt } from "@/components/ConsignmentReceipt";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { exportToExcel } from "@/lib/excel";
 
 const STATION_OPTIONS = [
   "Guangzhou", "Yiwu", "Lhasa", "Nylam (Khasa)", "Tatopani", "Kerung",
@@ -43,6 +44,7 @@ const Shipments = () => {
   const [viewing, setViewing] = useState<Shipment | null>(null);
   const [viewConsignment, setViewConsignment] = useState<Consignment | null>(null);
   const [editConsignment, setEditConsignment] = useState<Consignment | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [zoom, setZoom] = useState(1);
   const [translate, setTranslate] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
@@ -86,6 +88,24 @@ const Shipments = () => {
 
   const filtered = items.filter((s) => [s.lot_no, s.container_name, s.driver_name, s.start_station, s.end_station].filter(Boolean).join(" ").toLowerCase().includes(search.toLowerCase()));
 
+  const toggleRow = (id: string) => setSelectedIds((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
+  const toggleAll = (checked: boolean) => setSelectedIds(checked ? filtered.map((s) => s.id) : []);
+  const shipmentRow = (s: Shipment) => ({
+    "Lot No": s.lot_no, "Container": s.container_name, "Type": s.container_type,
+    "Driver": s.driver_name, "Phone": s.driver_phone, "From": s.start_station, "To": s.end_station,
+    "Status": s.status, "Consignments": s.consignment_ids.length, "Dispatched By": s.dispatched_by,
+    "Created": s.created_at, "Remarks": s.remarks,
+  });
+  const exportSelected = () => {
+    const rows = items.filter((s) => selectedIds.includes(s.id));
+    if (!rows.length) return toast.error("Select at least one shipment");
+    exportToExcel(rows.map(shipmentRow), `shipments-selected-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+  const exportAll = () => {
+    if (!items.length) return toast.error("Nothing to export");
+    exportToExcel(items.map(shipmentRow), `shipments-all-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
   const possibleConsignments = useMemo(
     () => consignments.filter((c) => (!form.start_station || c.start_station === form.start_station) && (!form.end_station || c.end_station === form.end_station)),
     [consignments, form.start_station, form.end_station]
@@ -128,6 +148,8 @@ const Shipments = () => {
         actions={
           <>
             <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className="pl-9 w-64" /></div>
+            <Button variant="outline" onClick={exportSelected} disabled={selectedIds.length === 0}><FileDown className="mr-1 h-4 w-4" />Export Selected ({selectedIds.length})</Button>
+            <Button variant="outline" onClick={exportAll}><FileDown className="mr-1 h-4 w-4" />Export All</Button>
             <Button onClick={openCreate} className="bg-gradient-primary text-primary-foreground"><Plus className="mr-1 h-4 w-4" />Create Shipment</Button>
           </>
         }
@@ -136,6 +158,10 @@ const Shipments = () => {
         <div className="mb-3 text-sm text-muted-foreground">Showing {filtered.length} of {items.length}</div>
         <DataTable<Shipment>
           data={filtered}
+          selectable
+          selectedIds={selectedIds}
+          onToggleRow={toggleRow}
+          onToggleAll={toggleAll}
           columns={[
             { key: "#", header: "#", render: (_r, i) => <span className="text-muted-foreground">{i + 1}</span> },
             { key: "lot_no", header: "Lot No", render: (r) => <Badge variant="secondary" className="bg-primary/10 text-primary">{r.lot_no}</Badge> },
@@ -372,13 +398,16 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
 
       <div>
         <div className="mb-2 text-base font-semibold text-primary">Consignments in this shipment</div>
-        <div className="overflow-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-gradient-primary text-primary-foreground">
+        <div className="overflow-auto rounded-lg border border-border max-h-[60vh]">
+          <table className="w-full text-sm border-separate border-spacing-0">
+            <thead className="bg-gradient-primary text-primary-foreground sticky top-0 z-30">
               <tr className="text-left">
-                {["Date","Consignment No.","Brand","Description","Cartoon","CTN No.","CBM","Weight","Freight","Local Freight","Bill Charge","Insurance","Other Charges","Tax","Total","Remarks","Actions"].map((h) => (
-                  <th key={h} className="px-3 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
-                ))}
+                {["Date","Consignment No.","Brand","Description","Cartoon","CTN No.","CBM","Weight","Freight","Local Freight","Bill Charge","Insurance","Other Charges","Tax","Total","Remarks","Actions"].map((h) => {
+                  const isBrand = h === "Brand", isCartoon = h === "Cartoon", isActions = h === "Actions";
+                  return (
+                    <th key={h} className={`px-3 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap ${isBrand ? "!bg-amber-500 !text-white" : ""} ${isCartoon ? "!bg-emerald-500 !text-white" : ""} ${isActions ? "sticky right-0 z-40 bg-gradient-primary" : ""}`}>{h}</th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -387,24 +416,24 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
               ) : consignments.map((c) => {
                 const other = Number(c.packaging_fee || 0) + Number(c.loading_fee || 0) + Number(c.unloading_fee || 0);
                 return (
-                  <tr key={c.id} className="border-t border-border hover:bg-accent/30">
-                    <td className="px-3 py-2 whitespace-nowrap">{new Date(c.start_date).toLocaleDateString()}</td>
-                    <td className="px-3 py-2"><Badge variant="secondary" className="bg-primary/10 text-primary">{c.bill_no}</Badge></td>
-                    <td className="px-3 py-2 font-medium">{c.marka || "—"}</td>
-                    <td className="px-3 py-2 max-w-[220px] truncate" title={c.description || ""}>{c.description || "—"}</td>
-                    <td className="px-3 py-2 text-center">{c.cartoon}</td>
-                    <td className="px-3 py-2">{c.ctn_no || "—"}</td>
-                    <td className="px-3 py-2 text-center">{c.cbm}</td>
-                    <td className="px-3 py-2 text-center">{c.weight}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.freight || 0))}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.local_freight || 0))}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.bill_charge || 0))}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.insurance || 0))}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(other)}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.tax || 0))}</td>
-                    <td className="px-3 py-2 text-right font-semibold">¥ {Math.round(Number(c.grand_total || 0))}</td>
-                    <td className="px-3 py-2 max-w-[180px] truncate" title={c.remarks || ""}>{c.remarks || "—"}</td>
-                    <td className="px-3 py-2"><ActionButtons onView={() => onView(c)} onEdit={() => onEdit(c)} onDelete={() => onDelete(c)} /></td>
+                  <tr key={c.id} className="group hover:bg-accent/30">
+                    <td className="px-3 py-2 whitespace-nowrap border-t border-border bg-card group-hover:bg-accent/30">{new Date(c.start_date).toLocaleDateString()}</td>
+                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30"><Badge variant="secondary" className="bg-primary/10 text-primary">{c.bill_no}</Badge></td>
+                    <td className="px-3 py-2 font-semibold border-t border-border bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200">{c.marka || "—"}</td>
+                    <td className="px-3 py-2 max-w-[220px] truncate border-t border-border bg-card group-hover:bg-accent/30" title={c.description || ""}>{c.description || "—"}</td>
+                    <td className="px-3 py-2 text-center font-semibold border-t border-border bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200">{c.cartoon}</td>
+                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30">{c.ctn_no || "—"}</td>
+                    <td className="px-3 py-2 text-center border-t border-border bg-card group-hover:bg-accent/30">{c.cbm}</td>
+                    <td className="px-3 py-2 text-center border-t border-border bg-card group-hover:bg-accent/30">{c.weight}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.freight || 0))}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.local_freight || 0))}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.bill_charge || 0))}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.insurance || 0))}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(other)}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.tax || 0))}</td>
+                    <td className="px-3 py-2 text-right font-semibold border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.grand_total || 0))}</td>
+                    <td className="px-3 py-2 max-w-[180px] truncate border-t border-border bg-card group-hover:bg-accent/30" title={c.remarks || ""}>{c.remarks || "—"}</td>
+                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30 sticky right-0 z-20"><ActionButtons onView={() => onView(c)} onEdit={() => onEdit(c)} onDelete={() => onDelete(c)} /></td>
                   </tr>
                 );
               })}

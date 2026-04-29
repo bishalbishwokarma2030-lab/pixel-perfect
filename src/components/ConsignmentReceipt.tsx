@@ -108,48 +108,50 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; w
 
           {/* English translation overlay — only masks Chinese-only text on the template (English labels already exist) */}
           {translate && (<>
-          {/* Top header Chinese-only lines: company name (line 1) and address (line 3) */}
-          <Mask className="left-[440px] top-[10px] w-[700px] h-[34px]" />
-          <Mask className="left-[440px] top-[60px] w-[700px] h-[34px]" />
+          {/* Top header — Chinese company name (top line) and Chinese address (line below the English name) */}
+          <EnHeader className="left-[440px] top-[8px] w-[700px] h-[34px] text-[18px]" text="ADO INTERNATIONAL SUPPLY CHAIN MANAGEMENT CO LTD" />
+          <EnHeader className="left-[440px] top-[58px] w-[700px] h-[34px] text-[14px]" text="No. 1F001, Linglong International, Fenggangcun, Shijing, Baiyun, Guangzhou, Guangdong" />
 
-          {/* Chinese labels above each English field label */}
-          <Mask className="left-[6px] top-[195px] w-[270px] h-[35px]" />
-          <Mask className="left-[760px] top-[195px] w-[295px] h-[35px]" />
-          <Mask className="left-[6px] top-[275px] w-[270px] h-[35px]" />
-          <Mask className="left-[760px] top-[275px] w-[295px] h-[35px]" />
-          <Mask className="left-[6px] top-[354px] w-[270px] h-[35px]" />
-          <Mask className="left-[760px] top-[354px] w-[295px] h-[35px]" />
+          {/* Field labels — mask the Chinese line (upper half of each label cell) and place English label */}
+          <EnLabel className="left-[6px] top-[195px] w-[270px] h-[34px]" text="CONSIGNMENT NO" />
+          <EnLabel className="left-[760px] top-[195px] w-[295px] h-[34px]" text="STARTING STATION" />
+          <EnLabel className="left-[6px] top-[275px] w-[270px] h-[34px]" text="CONSIGNMENT DATE" />
+          <EnLabel className="left-[760px] top-[275px] w-[295px] h-[34px]" text="DESTINATION" />
+          <EnLabel className="left-[6px] top-[354px] w-[270px] h-[34px]" text="CONSIGNMENT MARK" />
+          <EnLabel className="left-[760px] top-[354px] w-[295px] h-[34px]" text="TELEPHONE" />
 
-          {/* Column header Chinese (row 1) */}
-          <Mask className="left-[6px] top-[438px] w-[270px] h-[28px]" />
-          <Mask className="left-[280px] top-[438px] w-[97px] h-[28px]" />
-          <Mask className="left-[381px] top-[438px] w-[106px] h-[28px]" />
-          <Mask className="left-[491px] top-[438px] w-[103px] h-[28px]" />
-          <Mask className="left-[598px] top-[438px] w-[154px] h-[28px]" />
-          <Mask className="left-[956px] top-[438px] w-[98px] h-[28px]" />
-          <Mask className="left-[1058px] top-[438px] w-[149px] h-[28px]" />
-          <Mask className="left-[1211px] top-[438px] w-[108px] h-[28px]" />
-          <Mask className="left-[1323px] top-[438px] w-[95px] h-[28px]" />
-          <Mask className="left-[1422px] top-[438px] w-[153px] h-[28px]" />
+          {/* Column header row 1 — mask Chinese cells above each English column header */}
+          <EnLabel className="left-[6px] top-[434px] w-[270px] h-[28px]" text="DESCRIPTION" />
+          <EnLabel className="left-[280px] top-[434px] w-[97px] h-[28px]" text="PACKAGE" />
+          <EnLabel className="left-[381px] top-[434px] w-[106px] h-[28px]" text="QUANTITY" />
+          <EnLabel className="left-[491px] top-[434px] w-[103px] h-[28px]" text="CTN NO" />
+          <EnLabel className="left-[598px] top-[434px] w-[154px] h-[28px]" text="PACKAGING FEE" />
+          <EnLabel className="left-[754px] top-[434px] w-[200px] h-[28px]" text="LOAD / UNLOAD" />
+          <EnLabel className="left-[956px] top-[434px] w-[98px] h-[28px]" text="CBM" />
+          <EnLabel className="left-[1058px] top-[434px] w-[149px] h-[28px]" text="WEIGHT" />
+          <EnLabel className="left-[1211px] top-[434px] w-[108px] h-[28px]" text="TAX" />
+          <EnLabel className="left-[1323px] top-[434px] w-[95px] h-[28px]" text="FREIGHT" />
+          <EnLabel className="left-[1422px] top-[434px] w-[153px] h-[28px]" text="LOCAL FREIGHT" />
 
-          {/* Column header Chinese (row 2) */}
-          <Mask className="left-[6px] top-[524px] w-[270px] h-[28px]" />
-          <Mask className="left-[280px] top-[524px] w-[207px] h-[28px]" />
-          <Mask className="left-[491px] top-[524px] w-[260px] h-[28px]" />
-          <Mask className="left-[754px] top-[524px] w-[300px] h-[28px]" />
-          <Mask className="left-[1057px] top-[524px] w-[148px] h-[28px]" />
-          <Mask className="left-[1208px] top-[524px] w-[212px] h-[28px]" />
-          <Mask className="left-[1423px] top-[524px] w-[152px] h-[28px]" />
+          {/* Column header row 2 (totals row) */}
+          <EnLabel className="left-[6px] top-[520px] w-[270px] h-[28px]" text="VALUE OF GOODS" />
+          <EnLabel className="left-[280px] top-[520px] w-[207px] h-[28px]" text="INSURANCE" />
+          <EnLabel className="left-[491px] top-[520px] w-[260px] h-[28px]" text="BILL CHARGE" />
+          <EnLabel className="left-[754px] top-[520px] w-[300px] h-[28px]" text="ADVANCE" />
+          <EnLabel className="left-[1057px] top-[520px] w-[148px] h-[28px] text-red-600" text="TOTAL AMOUNT" />
+          <EnLabel className="left-[1208px] top-[520px] w-[212px] h-[28px]" text="FREIGHT ON DELIVERY" />
+          <EnLabel className="left-[1423px] top-[520px] w-[152px] h-[28px]" text="TRADE MODE" />
 
-          {/* "TOTAL AMOUNT IN WORDS / 元整" — mask the Chinese suffix only */}
-          <Mask className="left-[235px] top-[618px] w-[42px] h-[24px]" />
+          {/* "元整" Chinese suffix on TOTAL AMOUNT IN WORDS row — mask only */}
+          <Mask className="left-[222px] top-[620px] w-[55px] h-[22px]" />
 
-          {/* "备注" (Remarks) and "收货人签字" (Signature) Chinese labels */}
-          <Mask className="left-[6px] top-[665px] w-[270px] h-[28px]" />
-          <Mask className="left-[1057px] top-[665px] w-[150px] h-[28px]" />
+          {/* "备注" (Remarks) and "收货人签字" (Signature) labels */}
+          <EnLabel className="left-[6px] top-[665px] w-[270px] h-[28px]" text="REMARKS" />
+          <EnLabel className="left-[1057px] top-[665px] w-[150px] h-[28px]" text="SIGNATURE" />
 
           {/* "注意事项" before (NOTES) */}
           <Mask className="left-[560px] top-[745px] w-[100px] h-[26px]" />
+          <div className="absolute left-[560px] top-[745px] w-[100px] h-[26px] flex items-center justify-end pr-1 text-[14px] font-bold text-black">NOTES:</div>
           </>)}
         </div>
       </div>
@@ -159,7 +161,7 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; w
 
 function EnLabel({ className, text }: { className: string; text: string }) {
   return (
-    <div className={`absolute flex items-center justify-center bg-white text-[14px] font-semibold text-black border border-black/10 ${className}`}>
+    <div className={`absolute flex items-center justify-center bg-white text-[13px] font-bold uppercase tracking-wide text-black ${className}`}>
       {text}
     </div>
   );
@@ -171,7 +173,7 @@ function Mask({ className }: { className: string }) {
 
 function EnHeader({ className, text }: { className: string; text: string }) {
   return (
-    <div className={`absolute flex h-[18px] items-center justify-center bg-white text-[12px] font-bold uppercase tracking-wide text-[#2ea24f] ${className}`}>
+    <div className={`absolute flex items-center justify-center bg-white font-bold tracking-wide text-black ${className}`}>
       {text}
     </div>
   );
