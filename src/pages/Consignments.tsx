@@ -307,4 +307,34 @@ function SelectField({ label, value, onChange, options }: { label: string; value
   );
 }
 
+function ComboField({ label, value, onChange, options, listId }: { label: string; value: string; onChange: (v: string) => void; options: string[]; listId: string }) {
+  const display = value === ALL ? "" : value;
+  return (
+    <FilterField label={label}>
+      <div className="relative">
+        <Input
+          list={listId}
+          value={display}
+          onChange={(e) => onChange(e.target.value === "" ? ALL : e.target.value)}
+          placeholder="All — type or pick"
+          className="h-9 pr-7"
+        />
+        {display && (
+          <button
+            type="button"
+            aria-label="Clear"
+            onClick={() => onChange(ALL)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+          >
+            ✕
+          </button>
+        )}
+        <datalist id={listId}>
+          {options.map((o) => <option key={o} value={o} />)}
+        </datalist>
+      </div>
+    </FilterField>
+  );
+}
+
 export default Consignments;
