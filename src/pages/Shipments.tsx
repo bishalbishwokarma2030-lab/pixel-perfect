@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Search, Copy, Download, Pencil, Printer, ZoomIn, ZoomOut, Maximize2, Languages } from "lucide-react";
+import { Plus, Search, Copy, Download, Pencil, Printer, ZoomIn, ZoomOut, Maximize2, Languages, FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
 import { PageHeader } from "@/components/PageHeader";
@@ -17,6 +17,7 @@ import { api, Shipment, Station, Consignment } from "@/lib/store";
 import { ConsignmentForm } from "@/components/ConsignmentForm";
 import { ConsignmentReceipt } from "@/components/ConsignmentReceipt";
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { exportToExcel } from "@/lib/excel";
 
 const STATION_OPTIONS = [
   "Guangzhou", "Yiwu", "Lhasa", "Nylam (Khasa)", "Tatopani", "Kerung",
@@ -43,6 +44,7 @@ const Shipments = () => {
   const [viewing, setViewing] = useState<Shipment | null>(null);
   const [viewConsignment, setViewConsignment] = useState<Consignment | null>(null);
   const [editConsignment, setEditConsignment] = useState<Consignment | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [zoom, setZoom] = useState(1);
   const [translate, setTranslate] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
@@ -86,6 +88,24 @@ const Shipments = () => {
 
   const filtered = items.filter((s) => [s.lot_no, s.container_name, s.driver_name, s.start_station, s.end_station].filter(Boolean).join(" ").toLowerCase().includes(search.toLowerCase()));
 
+  const toggleRow = (id: string) => setSelectedIds((s) => s.includes(id) ? s.filter((x) => x !== id) : [...s, id]);
+  const toggleAll = (checked: boolean) => setSelectedIds(checked ? filtered.map((s) => s.id) : []);
+  const shipmentRow = (s: Shipment) => ({
+    "Lot No": s.lot_no, "Container": s.container_name, "Type": s.container_type,
+    "Driver": s.driver_name, "Phone": s.driver_phone, "From": s.start_station, "To": s.end_station,
+    "Status": s.status, "Consignments": s.consignment_ids.length, "Dispatched By": s.dispatched_by,
+    "Created": s.created_at, "Remarks": s.remarks,
+  });
+  const exportSelected = () => {
+    const rows = items.filter((s) => selectedIds.includes(s.id));
+    if (!rows.length) return toast.error("Select at least one shipment");
+    exportToExcel(rows.map(shipmentRow), `shipments-selected-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+  const exportAll = () => {
+    if (!items.length) return toast.error("Nothing to export");
+    exportToExcel(items.map(shipmentRow), `shipments-all-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+
   const possibleConsignments = useMemo(
     () => consignments.filter((c) => (!form.start_station || c.start_station === form.start_station) && (!form.end_station || c.end_station === form.end_station)),
     [consignments, form.start_station, form.end_station]
@@ -128,6 +148,8 @@ const Shipments = () => {
         actions={
           <>
             <div className="relative"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search…" className="pl-9 w-64" /></div>
+            <Button variant="outline" onClick={exportSelected} disabled={selectedIds.length === 0}><FileDown className="mr-1 h-4 w-4" />Export Selected ({selectedIds.length})</Button>
+            <Button variant="outline" onClick={exportAll}><FileDown className="mr-1 h-4 w-4" />Export All</Button>
             <Button onClick={openCreate} className="bg-gradient-primary text-primary-foreground"><Plus className="mr-1 h-4 w-4" />Create Shipment</Button>
           </>
         }
@@ -136,6 +158,10 @@ const Shipments = () => {
         <div className="mb-3 text-sm text-muted-foreground">Showing {filtered.length} of {items.length}</div>
         <DataTable<Shipment>
           data={filtered}
+          selectable
+          selectedIds={selectedIds}
+          onToggleRow={toggleRow}
+          onToggleAll={toggleAll}
           columns={[
             { key: "#", header: "#", render: (_r, i) => <span className="text-muted-foreground">{i + 1}</span> },
             { key: "lot_no", header: "Lot No", render: (r) => <Badge variant="secondary" className="bg-primary/10 text-primary">{r.lot_no}</Badge> },
