@@ -398,13 +398,16 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
 
       <div>
         <div className="mb-2 text-base font-semibold text-primary">Consignments in this shipment</div>
-        <div className="overflow-auto rounded-lg border border-border">
-          <table className="w-full text-sm">
-            <thead className="bg-gradient-primary text-primary-foreground">
+        <div className="overflow-auto rounded-lg border border-border max-h-[60vh]">
+          <table className="w-full text-sm border-separate border-spacing-0">
+            <thead className="bg-gradient-primary text-primary-foreground sticky top-0 z-30">
               <tr className="text-left">
-                {["Date","Consignment No.","Brand","Description","Cartoon","CTN No.","CBM","Weight","Freight","Local Freight","Bill Charge","Insurance","Other Charges","Tax","Total","Remarks","Actions"].map((h) => (
-                  <th key={h} className="px-3 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
-                ))}
+                {["Date","Consignment No.","Brand","Description","Cartoon","CTN No.","CBM","Weight","Freight","Local Freight","Bill Charge","Insurance","Other Charges","Tax","Total","Remarks","Actions"].map((h) => {
+                  const isBrand = h === "Brand", isCartoon = h === "Cartoon", isActions = h === "Actions";
+                  return (
+                    <th key={h} className={`px-3 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap ${isBrand ? "!bg-amber-500 !text-white" : ""} ${isCartoon ? "!bg-emerald-500 !text-white" : ""} ${isActions ? "sticky right-0 z-40 bg-gradient-primary" : ""}`}>{h}</th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
@@ -413,24 +416,24 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
               ) : consignments.map((c) => {
                 const other = Number(c.packaging_fee || 0) + Number(c.loading_fee || 0) + Number(c.unloading_fee || 0);
                 return (
-                  <tr key={c.id} className="border-t border-border hover:bg-accent/30">
-                    <td className="px-3 py-2 whitespace-nowrap">{new Date(c.start_date).toLocaleDateString()}</td>
-                    <td className="px-3 py-2"><Badge variant="secondary" className="bg-primary/10 text-primary">{c.bill_no}</Badge></td>
-                    <td className="px-3 py-2 font-medium">{c.marka || "—"}</td>
-                    <td className="px-3 py-2 max-w-[220px] truncate" title={c.description || ""}>{c.description || "—"}</td>
-                    <td className="px-3 py-2 text-center">{c.cartoon}</td>
-                    <td className="px-3 py-2">{c.ctn_no || "—"}</td>
-                    <td className="px-3 py-2 text-center">{c.cbm}</td>
-                    <td className="px-3 py-2 text-center">{c.weight}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.freight || 0))}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.local_freight || 0))}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.bill_charge || 0))}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.insurance || 0))}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(other)}</td>
-                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.tax || 0))}</td>
-                    <td className="px-3 py-2 text-right font-semibold">¥ {Math.round(Number(c.grand_total || 0))}</td>
-                    <td className="px-3 py-2 max-w-[180px] truncate" title={c.remarks || ""}>{c.remarks || "—"}</td>
-                    <td className="px-3 py-2"><ActionButtons onView={() => onView(c)} onEdit={() => onEdit(c)} onDelete={() => onDelete(c)} /></td>
+                  <tr key={c.id} className="group hover:bg-accent/30">
+                    <td className="px-3 py-2 whitespace-nowrap border-t border-border bg-card group-hover:bg-accent/30">{new Date(c.start_date).toLocaleDateString()}</td>
+                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30"><Badge variant="secondary" className="bg-primary/10 text-primary">{c.bill_no}</Badge></td>
+                    <td className="px-3 py-2 font-semibold border-t border-border bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200">{c.marka || "—"}</td>
+                    <td className="px-3 py-2 max-w-[220px] truncate border-t border-border bg-card group-hover:bg-accent/30" title={c.description || ""}>{c.description || "—"}</td>
+                    <td className="px-3 py-2 text-center font-semibold border-t border-border bg-emerald-50 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200">{c.cartoon}</td>
+                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30">{c.ctn_no || "—"}</td>
+                    <td className="px-3 py-2 text-center border-t border-border bg-card group-hover:bg-accent/30">{c.cbm}</td>
+                    <td className="px-3 py-2 text-center border-t border-border bg-card group-hover:bg-accent/30">{c.weight}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.freight || 0))}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.local_freight || 0))}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.bill_charge || 0))}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.insurance || 0))}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(other)}</td>
+                    <td className="px-3 py-2 text-right border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.tax || 0))}</td>
+                    <td className="px-3 py-2 text-right font-semibold border-t border-border bg-card group-hover:bg-accent/30">¥ {Math.round(Number(c.grand_total || 0))}</td>
+                    <td className="px-3 py-2 max-w-[180px] truncate border-t border-border bg-card group-hover:bg-accent/30" title={c.remarks || ""}>{c.remarks || "—"}</td>
+                    <td className="px-3 py-2 border-t border-border bg-card group-hover:bg-accent/30 sticky right-0 z-20"><ActionButtons onView={() => onView(c)} onEdit={() => onEdit(c)} onDelete={() => onDelete(c)} /></td>
                   </tr>
                 );
               })}
