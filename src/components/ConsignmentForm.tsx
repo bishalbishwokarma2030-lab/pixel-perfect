@@ -75,17 +75,21 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
   }, [endStationData, form.calculation_factor]);
 
   const calculatedFreight = useMemo(() => {
-    if (form.calculation_factor === "CBM") return calculatedRate * Number(form.cbm || 0);
-    if (form.calculation_factor === "Weight") return calculatedRate * Number(form.weight || 0);
+    if (form.calculation_factor === "CBM") {
+      const cbmVal = Number(form.cbm || 0);
+      const effectiveCbm = cbmVal <= 0.5 ? 0.5 : cbmVal;
+      return Math.round(calculatedRate * effectiveCbm);
+    }
+    if (form.calculation_factor === "Weight") return Math.round(calculatedRate * Number(form.weight || 0));
     return 0;
   }, [calculatedRate, form.calculation_factor, form.cbm, form.weight]);
 
-  const subTotal = useMemo(() => {
+  const subTotalRaw = useMemo(() => {
     return ["packaging_fee", "tax", "local_freight", "bill_charge", "loading_fee", "unloading_fee"]
       .reduce((s, k) => s + Number(form[k] || 0), 0) + insurance + calculatedFreight;
   }, [form, insurance, calculatedFreight]);
-
-  const advanceAmount = Number(form.goods_advance || 0) + Number(form.payment_amount || 0);
+  const subTotal = Math.round(subTotalRaw);
+  const advanceAmount = Math.round(Number(form.goods_advance || 0) + Number(form.payment_amount || 0));
   const grandTotal = subTotal - advanceAmount;
 
   const save = async () => {
@@ -251,10 +255,10 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
 
             <div className="rounded-xl bg-gradient-primary p-5 text-primary-foreground shadow-elegant">
               <div className="text-lg font-bold">Summary</div>
-              <Row label="Sub Total" value={`¥ ${subTotal.toFixed(2)}`} />
-              <Row label="Advance Amount" value={`¥ ${advanceAmount.toFixed(2)}`} />
+              <Row label="Sub Total" value={`¥ ${subTotal}`} />
+              <Row label="Advance Amount" value={`¥ ${advanceAmount}`} />
               <div className="my-2 border-t border-dashed border-primary-foreground/40" />
-              <Row label="Grand Total" value={`¥ ${grandTotal.toFixed(2)}`} bold />
+              <Row label="Grand Total" value={`¥ ${grandTotal}`} bold />
             </div>
           </div>
         </div>
