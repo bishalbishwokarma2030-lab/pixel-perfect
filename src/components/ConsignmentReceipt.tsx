@@ -106,41 +106,50 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; w
           <div className="absolute left-[1576px] top-[683px] h-[54px] w-[2px] bg-black" />
           <div className="absolute left-[1206px] top-[736px] h-[2px] w-[370px] bg-black" />
 
-          {/* English translation overlay — masks Chinese labels with white blocks and prints English equivalents */}
+          {/* English translation overlay — only masks Chinese-only text on the template (English labels already exist) */}
           {translate && (<>
-          <EnLabel className="left-[180px] top-[195px] w-[110px] h-[40px]" text="Bill No." />
-          <EnLabel className="left-[180px] top-[275px] w-[110px] h-[40px]" text="Date" />
-          <EnLabel className="left-[180px] top-[354px] w-[110px] h-[40px]" text="Brand" />
-          <EnLabel className="left-[955px] top-[195px] w-[110px] h-[40px]" text="From" />
-          <EnLabel className="left-[955px] top-[275px] w-[110px] h-[40px]" text="To" />
-          <EnLabel className="left-[955px] top-[354px] w-[110px] h-[40px]" text="Phone" />
+          {/* Top header Chinese-only lines: company name (line 1) and address (line 3) */}
+          <Mask className="left-[440px] top-[10px] w-[700px] h-[34px]" />
+          <Mask className="left-[440px] top-[60px] w-[700px] h-[34px]" />
 
-          {/* Column headers row above first data row (y≈480) */}
-          <EnHeader className="left-[4px] top-[483px] w-[274px]" text="Description" />
-          <EnHeader className="left-[278px] top-[483px] w-[101px]" text="Pkg Type" />
-          <EnHeader className="left-[379px] top-[483px] w-[110px]" text="Qty" />
-          <EnHeader className="left-[489px] top-[483px] w-[107px]" text="CTN No." />
-          <EnHeader className="left-[596px] top-[483px] w-[158px]" text="Packaging" />
-          <EnHeader className="left-[754px] top-[483px] w-[87px]" text="Loading" />
-          <EnHeader className="left-[841px] top-[483px] w-[113px]" text="Unloading" />
-          <EnHeader className="left-[954px] top-[483px] w-[102px]" text="CBM" />
-          <EnHeader className="left-[1056px] top-[483px] w-[153px]" text="Weight" />
-          <EnHeader className="left-[1209px] top-[483px] w-[112px]" text="Tax" />
-          <EnHeader className="left-[1321px] top-[483px] w-[99px]" text="Freight" />
-          <EnHeader className="left-[1420px] top-[483px] w-[157px]" text="Local Freight" />
+          {/* Chinese labels above each English field label */}
+          <Mask className="left-[6px] top-[195px] w-[270px] h-[35px]" />
+          <Mask className="left-[760px] top-[195px] w-[295px] h-[35px]" />
+          <Mask className="left-[6px] top-[275px] w-[270px] h-[35px]" />
+          <Mask className="left-[760px] top-[275px] w-[295px] h-[35px]" />
+          <Mask className="left-[6px] top-[354px] w-[270px] h-[35px]" />
+          <Mask className="left-[760px] top-[354px] w-[295px] h-[35px]" />
 
-          {/* Headers above second data row (y≈569) */}
-          <EnHeader className="left-[0px] top-[569px] w-[277px]" text="Value of Goods" />
-          <EnHeader className="left-[277px] top-[569px] w-[211px]" text="Insurance" />
-          <EnHeader className="left-[488px] top-[569px] w-[264px]" text="Bill Charge" />
-          <EnHeader className="left-[752px] top-[569px] w-[303px]" text="Advance" />
-          <EnHeader className="left-[1055px] top-[569px] w-[151px]" text="Total" />
-          <EnHeader className="left-[1206px] top-[569px] w-[215px]" text="Freight on Delivery" />
-          <EnHeader className="left-[1421px] top-[569px] w-[155px]" text="Trade Mode" />
+          {/* Column header Chinese (row 1) */}
+          <Mask className="left-[6px] top-[438px] w-[270px] h-[28px]" />
+          <Mask className="left-[280px] top-[438px] w-[97px] h-[28px]" />
+          <Mask className="left-[381px] top-[438px] w-[106px] h-[28px]" />
+          <Mask className="left-[491px] top-[438px] w-[103px] h-[28px]" />
+          <Mask className="left-[598px] top-[438px] w-[154px] h-[28px]" />
+          <Mask className="left-[956px] top-[438px] w-[98px] h-[28px]" />
+          <Mask className="left-[1058px] top-[438px] w-[149px] h-[28px]" />
+          <Mask className="left-[1211px] top-[438px] w-[108px] h-[28px]" />
+          <Mask className="left-[1323px] top-[438px] w-[95px] h-[28px]" />
+          <Mask className="left-[1422px] top-[438px] w-[153px] h-[28px]" />
 
-          {/* Footer labels (remarks / signature) row header at y≈660 */}
-          <EnHeader className="left-[278px] top-[665px] w-[777px]" text="Remarks" />
-          <EnHeader className="left-[1206px] top-[665px] w-[370px]" text="Received By" />
+          {/* Column header Chinese (row 2) */}
+          <Mask className="left-[6px] top-[524px] w-[270px] h-[28px]" />
+          <Mask className="left-[280px] top-[524px] w-[207px] h-[28px]" />
+          <Mask className="left-[491px] top-[524px] w-[260px] h-[28px]" />
+          <Mask className="left-[754px] top-[524px] w-[300px] h-[28px]" />
+          <Mask className="left-[1057px] top-[524px] w-[148px] h-[28px]" />
+          <Mask className="left-[1208px] top-[524px] w-[212px] h-[28px]" />
+          <Mask className="left-[1423px] top-[524px] w-[152px] h-[28px]" />
+
+          {/* "TOTAL AMOUNT IN WORDS / 元整" — mask the Chinese suffix only */}
+          <Mask className="left-[235px] top-[618px] w-[42px] h-[24px]" />
+
+          {/* "备注" (Remarks) and "收货人签字" (Signature) Chinese labels */}
+          <Mask className="left-[6px] top-[665px] w-[270px] h-[28px]" />
+          <Mask className="left-[1057px] top-[665px] w-[150px] h-[28px]" />
+
+          {/* "注意事项" before (NOTES) */}
+          <Mask className="left-[560px] top-[745px] w-[100px] h-[26px]" />
           </>)}
         </div>
       </div>
@@ -154,6 +163,10 @@ function EnLabel({ className, text }: { className: string; text: string }) {
       {text}
     </div>
   );
+}
+
+function Mask({ className }: { className: string }) {
+  return <div className={`absolute bg-white ${className}`} />;
 }
 
 function EnHeader({ className, text }: { className: string; text: string }) {
