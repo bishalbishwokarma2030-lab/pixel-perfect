@@ -66,7 +66,6 @@ const Consignments = () => {
   // Filter bar state
   const [search, setSearch] = useState("");
   const [billNo, setBillNo] = useState("");
-  const [trackId, setTrackId] = useState("");
   const [brand, setBrand] = useState(ALL);
   const [startStation, setStartStation] = useState(ALL);
   const [currentAt, setCurrentAt] = useState(ALL);
@@ -126,7 +125,6 @@ const Consignments = () => {
     let out = items.filter((c) => {
       if (search && ![c.bill_no, c.marka, c.start_station, c.end_station, c.client_name, c.ctn_no, c.description].filter(Boolean).join(" ").toLowerCase().includes(search.toLowerCase())) return false;
       if (billNo && !(c.bill_no || "").toLowerCase().includes(billNo.toLowerCase())) return false;
-      if (trackId && !(c.ctn_no || "").toLowerCase().includes(trackId.toLowerCase())) return false;
       if (brand !== ALL && c.marka !== brand) return false;
       if (startStation !== ALL && c.start_station !== startStation) return false;
       if (currentAt !== ALL && (c.current_station || c.start_station) !== currentAt) return false;
@@ -140,7 +138,7 @@ const Consignments = () => {
     });
     out = [...out].sort((a, b) => order === "DESC" ? b.start_date.localeCompare(a.start_date) : a.start_date.localeCompare(b.start_date));
     return out;
-  }, [items, search, billNo, trackId, brand, startStation, currentAt, endStation, client, status, paymentStatus, order, startDate, endDate]);
+  }, [items, search, billNo, brand, startStation, currentAt, endStation, client, status, paymentStatus, order, startDate, endDate]);
 
   const remove = async (c: Consignment) => {
     if (!confirm(`Delete consignment "${c.bill_no}"?`)) return;
@@ -182,7 +180,6 @@ const Consignments = () => {
         <div className="mb-4 grid grid-cols-2 gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-4 lg:grid-cols-8">
           <FilterField label="Search"><div className="relative"><Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="eg. Search…" className="pl-7 h-9" /></div></FilterField>
           <FilterField label="BillNo"><Input value={billNo} onChange={(e) => setBillNo(e.target.value)} placeholder="eg. 11" className="h-9" /></FilterField>
-          <FilterField label="TrackId"><Input value={trackId} onChange={(e) => setTrackId(e.target.value)} placeholder="eg. Search…" className="h-9" /></FilterField>
           <SelectField label="Brand" value={brand} onChange={setBrand} options={brandOpts} />
           <SelectField label="Start Station" value={startStation} onChange={setStartStation} options={stationOpts} />
           <SelectField label="Current At" value={currentAt} onChange={setCurrentAt} options={stationOpts} />
