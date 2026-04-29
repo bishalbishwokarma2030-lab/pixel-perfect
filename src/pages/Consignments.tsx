@@ -125,12 +125,12 @@ const Consignments = () => {
     let out = items.filter((c) => {
       if (search && ![c.bill_no, c.marka, c.start_station, c.end_station, c.client_name, c.ctn_no, c.description].filter(Boolean).join(" ").toLowerCase().includes(search.toLowerCase())) return false;
       if (billNo && !(c.bill_no || "").toLowerCase().includes(billNo.toLowerCase())) return false;
-      if (brand !== ALL && c.marka !== brand) return false;
+      if (brand && brand !== ALL && !(c.marka || "").toLowerCase().includes(brand.toLowerCase())) return false;
       if (startStation !== ALL && c.start_station !== startStation) return false;
       if (currentAt !== ALL && (c.current_station || c.start_station) !== currentAt) return false;
       if (endStation !== ALL && c.end_station !== endStation) return false;
-      if (client !== ALL && c.client_name !== client) return false;
-      if (status !== ALL && c.status !== status) return false;
+      if (client && client !== ALL && !(c.client_name || "").toLowerCase().includes(client.toLowerCase())) return false;
+      if (status && status !== ALL && !(c.status || "").toLowerCase().includes(status.toLowerCase())) return false;
       if (paymentStatus !== ALL && (c.payment_status || "Unpaid") !== paymentStatus) return false;
       if (startDate && c.start_date < startDate) return false;
       if (endDate && c.start_date > endDate) return false;
@@ -180,12 +180,12 @@ const Consignments = () => {
         <div className="mb-4 grid grid-cols-2 gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-4 lg:grid-cols-8">
           <FilterField label="Search"><div className="relative"><Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="eg. Search…" className="pl-7 h-9" /></div></FilterField>
           <FilterField label="BillNo"><Input value={billNo} onChange={(e) => setBillNo(e.target.value)} placeholder="eg. 11" className="h-9" /></FilterField>
-          <SelectField label="Brand" value={brand} onChange={setBrand} options={brandOpts} />
+          <ComboField label="Brand" value={brand} onChange={setBrand} options={brandOpts} listId="brand-opts" />
           <SelectField label="Start Station" value={startStation} onChange={setStartStation} options={stationOpts} />
           <SelectField label="Current At" value={currentAt} onChange={setCurrentAt} options={stationOpts} />
           <SelectField label="End Station" value={endStation} onChange={setEndStation} options={stationOpts} />
-          <SelectField label="Client" value={client} onChange={setClient} options={clientOpts} />
-          <SelectField label="Status" value={status} onChange={setStatus} options={["Pending", "In Transit", "Delivered", "Cancelled"]} />
+          <ComboField label="Client" value={client} onChange={setClient} options={clientOpts} listId="client-opts" />
+          <ComboField label="Status" value={status} onChange={setStatus} options={["Pending", "In Transit", "Delivered", "Cancelled"]} listId="status-opts" />
           <SelectField label="Payment Status" value={paymentStatus} onChange={setPaymentStatus} options={["Unpaid", "Partial", "Paid"]} />
           <FilterField label="Order"><Select value={order} onValueChange={(v) => setOrder(v as any)}><SelectTrigger className="h-9"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="DESC">DESC</SelectItem><SelectItem value="ASC">ASC</SelectItem></SelectContent></Select></FilterField>
           <FilterField label="Start Date"><Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9" /></FilterField>
@@ -303,6 +303,36 @@ function SelectField({ label, value, onChange, options }: { label: string; value
           {options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
         </SelectContent>
       </Select>
+    </FilterField>
+  );
+}
+
+function ComboField({ label, value, onChange, options, listId }: { label: string; value: string; onChange: (v: string) => void; options: string[]; listId: string }) {
+  const display = value === ALL ? "" : value;
+  return (
+    <FilterField label={label}>
+      <div className="relative">
+        <Input
+          list={listId}
+          value={display}
+          onChange={(e) => onChange(e.target.value === "" ? ALL : e.target.value)}
+          placeholder="All — type or pick"
+          className="h-9 pr-7"
+        />
+        {display && (
+          <button
+            type="button"
+            aria-label="Clear"
+            onClick={() => onChange(ALL)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+          >
+            ✕
+          </button>
+        )}
+        <datalist id={listId}>
+          {options.map((o) => <option key={o} value={o} />)}
+        </datalist>
+      </div>
     </FilterField>
   );
 }

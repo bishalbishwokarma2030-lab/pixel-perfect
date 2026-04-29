@@ -87,9 +87,9 @@ const Stations = () => {
             { key: "name", header: "Name", render: (r) => <span className="font-medium">{r.name}</span> },
             { key: "code", header: "Code", render: (r) => <Badge variant="secondary" className="bg-primary/10 text-primary">{r.code}</Badge> },
             { key: "phone", header: "Phone", render: (r) => r.phone || "—" },
-            { key: "location", header: "Location", render: (r) => r.location || "—" },
-            { key: "cbm_rate", header: "CBM Rate", render: (r) => <Badge className="bg-accent text-accent-foreground">{r.cbm_rate}</Badge> },
-            { key: "weight_rate", header: "Weight Rate", render: (r) => <Badge className="bg-accent text-accent-foreground">{r.weight_rate}</Badge> },
+            { key: "location", header: "Location", className: "bg-amber-50 dark:bg-amber-950/30 font-semibold text-amber-900 dark:text-amber-200", headerClassName: "!bg-amber-500 !text-white", render: (r) => r.location || "—" },
+            { key: "cbm_rate", header: "CBM Rate", className: "bg-amber-50 dark:bg-amber-950/30", headerClassName: "!bg-amber-500 !text-white", render: (r) => <span className="font-semibold text-amber-900 dark:text-amber-200">{r.cbm_rate}</span> },
+            { key: "weight_rate", header: "Weight Rate", className: "bg-amber-50 dark:bg-amber-950/30", headerClassName: "!bg-amber-500 !text-white", render: (r) => <span className="font-semibold text-amber-900 dark:text-amber-200">{r.weight_rate}</span> },
             { key: "created_at", header: "Created", render: (r) => <span className="text-sm text-muted-foreground">{new Date(r.created_at).toLocaleString()}</span> },
             { key: "actions", header: "Actions", render: (r) => <ActionButtons onView={() => setViewing(r)} onEdit={() => openEdit(r)} onDelete={() => remove(r)} /> },
           ]}
