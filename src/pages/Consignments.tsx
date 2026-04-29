@@ -125,12 +125,12 @@ const Consignments = () => {
     let out = items.filter((c) => {
       if (search && ![c.bill_no, c.marka, c.start_station, c.end_station, c.client_name, c.ctn_no, c.description].filter(Boolean).join(" ").toLowerCase().includes(search.toLowerCase())) return false;
       if (billNo && !(c.bill_no || "").toLowerCase().includes(billNo.toLowerCase())) return false;
-      if (brand !== ALL && c.marka !== brand) return false;
+      if (brand && brand !== ALL && !(c.marka || "").toLowerCase().includes(brand.toLowerCase())) return false;
       if (startStation !== ALL && c.start_station !== startStation) return false;
       if (currentAt !== ALL && (c.current_station || c.start_station) !== currentAt) return false;
       if (endStation !== ALL && c.end_station !== endStation) return false;
-      if (client !== ALL && c.client_name !== client) return false;
-      if (status !== ALL && c.status !== status) return false;
+      if (client && client !== ALL && !(c.client_name || "").toLowerCase().includes(client.toLowerCase())) return false;
+      if (status && status !== ALL && !(c.status || "").toLowerCase().includes(status.toLowerCase())) return false;
       if (paymentStatus !== ALL && (c.payment_status || "Unpaid") !== paymentStatus) return false;
       if (startDate && c.start_date < startDate) return false;
       if (endDate && c.start_date > endDate) return false;
