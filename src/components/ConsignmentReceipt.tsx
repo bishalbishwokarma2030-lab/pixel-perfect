@@ -165,6 +165,10 @@ function EnLabel({ className, text }: { className: string; text: string }) {
   );
 }
 
+function Mask({ className }: { className: string }) {
+  return <div className={`absolute bg-white ${className}`} />;
+}
+
 function EnHeader({ className, text }: { className: string; text: string }) {
   return (
     <div className={`absolute flex h-[18px] items-center justify-center bg-white text-[12px] font-bold uppercase tracking-wide text-[#2ea24f] ${className}`}>
