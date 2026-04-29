@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Plus, Search, Printer, Copy, Download, Pencil, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { Plus, Search, Printer, Copy, Download, Pencil, ZoomIn, ZoomOut, Maximize2, Languages } from "lucide-react";
 import { toast } from "sonner";
 import { toPng } from "html-to-image";
 import { PageHeader } from "@/components/PageHeader";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge";
 import { ConsignmentForm } from "@/components/ConsignmentForm";
 import { ConsignmentReceipt } from "@/components/ConsignmentReceipt";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { api, Consignment } from "@/lib/store";
 
 const Consignments = () => {
@@ -20,6 +21,7 @@ const Consignments = () => {
   const [editing, setEditing] = useState<Consignment | null>(null);
   const [viewing, setViewing] = useState<Consignment | null>(null);
   const [zoom, setZoom] = useState(1);
+  const [translate, setTranslate] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
   const BASE_W = 1200;
   const zoomIn = () => setZoom((z) => Math.min(2.5, +(z + 0.15).toFixed(2)));
@@ -119,7 +121,7 @@ const Consignments = () => {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!viewing} onOpenChange={(o) => { if (!o) { setViewing(null); zoomReset(); } }}>
+      <Dialog open={!!viewing} onOpenChange={(o) => { if (!o) { setViewing(null); zoomReset(); setTranslate(false); } }}>
         <DialogContent className="w-[97vw] max-w-[1600px] max-h-[95vh] overflow-hidden p-4 sm:p-6 flex flex-col">
           <DialogHeader>
             <div className="flex flex-wrap items-center justify-between gap-2 pr-6">
@@ -134,12 +136,27 @@ const Consignments = () => {
                 <Button size="sm" variant="outline" onClick={copyReceipt}><Copy className="mr-1 h-4 w-4" />Copy</Button>
                 <Button size="sm" variant="outline" onClick={downloadReceipt}><Download className="mr-1 h-4 w-4" />Download</Button>
                 <Button size="sm" variant="outline" onClick={editReceipt}><Pencil className="mr-1 h-4 w-4" />Edit</Button>
+                <Button size="sm" variant={translate ? "default" : "outline"} onClick={() => setTranslate((t) => !t)}><Languages className="mr-1 h-4 w-4" />{translate ? "Original" : "Translate to English"}</Button>
                 <Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="mr-1 h-4 w-4" />Print</Button>
               </div>
             </div>
           </DialogHeader>
           <div className="flex-1 overflow-auto rounded-md bg-muted/20 p-3">
-            {viewing && <ConsignmentReceipt ref={receiptRef} c={viewing} width={Math.round(BASE_W * zoom)} />}
+            {viewing && (
+              <ContextMenu>
+                <ContextMenuTrigger asChild>
+                  <div>
+                    <ConsignmentReceipt ref={receiptRef} c={viewing} width={Math.round(BASE_W * zoom)} translate={translate} />
+                  </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                  <ContextMenuItem onClick={() => setTranslate((t) => !t)}>
+                    <Languages className="mr-2 h-4 w-4" />
+                    {translate ? "Show Original" : "Translate to English"}
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
+            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import receiptTemplate from "@/assets/consignment-receipt-template-blank.jpg";
 import { Consignment } from "@/lib/store";
 
-export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; width?: number }>(function ConsignmentReceipt({ c, width }, ref) {
+export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; width?: number; translate?: boolean }>(function ConsignmentReceipt({ c, width, translate = false }, ref) {
   const isGuangzhou = (c.start_station || "").toLowerCase().includes("guangzhou");
   const isYiwu = (c.start_station || "").toLowerCase().includes("yiwu");
   const stationLabel = isGuangzhou ? "Guangzhou" : isYiwu ? "Yiwu" : c.start_station;
@@ -107,6 +107,7 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; w
           <div className="absolute left-[1206px] top-[736px] h-[2px] w-[370px] bg-black" />
 
           {/* English translation overlay — masks Chinese labels with white blocks and prints English equivalents */}
+          {translate && (<>
           <EnLabel className="left-[180px] top-[195px] w-[110px] h-[40px]" text="Bill No." />
           <EnLabel className="left-[180px] top-[275px] w-[110px] h-[40px]" text="Date" />
           <EnLabel className="left-[180px] top-[354px] w-[110px] h-[40px]" text="Brand" />
@@ -140,6 +141,7 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; w
           {/* Footer labels (remarks / signature) row header at y≈660 */}
           <EnHeader className="left-[278px] top-[665px] w-[777px]" text="Remarks" />
           <EnHeader className="left-[1206px] top-[665px] w-[370px]" text="Received By" />
+          </>)}
         </div>
       </div>
     </div>
