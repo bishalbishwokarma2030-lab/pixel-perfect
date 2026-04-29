@@ -85,7 +85,8 @@ const Consignments = () => {
           columns={[
             { key: "date", header: "Date", render: (r) => <span className="text-sm">{new Date(r.start_date).toLocaleDateString()}</span> },
             { key: "bill_no", header: "Consignment No.", render: (r) => <Badge variant="secondary" className="bg-primary/10 text-primary">{r.bill_no}</Badge> },
-            { key: "marka", header: "Marka", render: (r) => <span className="font-medium">{r.marka || "—"}</span> },
+            { key: "marka", header: "Brand", render: (r) => <span className="font-medium">{r.marka || "—"}</span> },
+            { key: "ctn_no", header: "CTN No.", render: (r) => <span className="text-sm">{r.ctn_no || "—"}</span> },
             { key: "cbm", header: "CBM" },
             { key: "weight", header: "Weight" },
             { key: "cartoon", header: "Cartoon" },

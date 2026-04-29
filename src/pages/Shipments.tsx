@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Plus, Search, Copy, Download, Pencil, Printer, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { toast } from "sonner";
+import { toPng } from "html-to-image";
 import { PageHeader } from "@/components/PageHeader";
 import { DataTable } from "@/components/DataTable";
 import { ActionButtons } from "@/components/ActionButtons";
@@ -13,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { api, Shipment, Station, Consignment } from "@/lib/store";
+import { ConsignmentForm } from "@/components/ConsignmentForm";
+import { ConsignmentReceipt } from "@/components/ConsignmentReceipt";
 
 const STATION_OPTIONS = [
   "Guangzhou", "Yiwu", "Lhasa", "Nylam (Khasa)", "Tatopani", "Kerung",
@@ -37,6 +40,42 @@ const Shipments = () => {
   const [editing, setEditing] = useState<Shipment | null>(null);
   const [form, setForm] = useState<any>(empty);
   const [viewing, setViewing] = useState<Shipment | null>(null);
+  const [viewConsignment, setViewConsignment] = useState<Consignment | null>(null);
+  const [editConsignment, setEditConsignment] = useState<Consignment | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const receiptRef = useRef<HTMLDivElement>(null);
+  const BASE_W = 1200;
+  const zoomIn = () => setZoom((z) => Math.min(2.5, +(z + 0.15).toFixed(2)));
+  const zoomOut = () => setZoom((z) => Math.max(0.4, +(z - 0.15).toFixed(2)));
+  const zoomReset = () => setZoom(1);
+
+  const renderReceiptPng = async () => {
+    if (!receiptRef.current) throw new Error("Receipt not ready");
+    return await toPng(receiptRef.current, { pixelRatio: 2, cacheBust: true, backgroundColor: "#ffffff" });
+  };
+  const downloadReceipt = async () => {
+    try {
+      const dataUrl = await renderReceiptPng();
+      const a = document.createElement("a");
+      a.download = `consignment-${viewConsignment?.bill_no || "receipt"}.png`;
+      a.href = dataUrl; a.click();
+      toast.success("Downloaded");
+    } catch (e: any) { toast.error(e.message || "Download failed"); }
+  };
+  const copyReceipt = async () => {
+    try {
+      const dataUrl = await renderReceiptPng();
+      const blob = await (await fetch(dataUrl)).blob();
+      // @ts-ignore
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      toast.success("Copied to clipboard");
+    } catch (e: any) { toast.error(e.message || "Copy failed"); }
+  };
+
+  const removeConsignment = async (c: Consignment) => {
+    if (!confirm(`Delete consignment "${c.bill_no}"?`)) return;
+    try { await api.consignments.remove(c.id); toast.success("Deleted"); load(); } catch (e: any) { toast.error(e.message); }
+  };
 
   const load = () => Promise.all([api.shipments.list(), api.stations.list(), api.consignments.list()])
     .then(([sh, st, cn]) => { setItems(sh); setStations(st); setConsignments(cn); })
@@ -216,20 +255,56 @@ const Shipments = () => {
       </Dialog>
 
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="w-[97vw] max-w-[1500px] max-h-[92vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Shipment Details</DialogTitle></DialogHeader>
           {viewing && (
-            <div className="grid grid-cols-2 gap-3 text-base">
-              <Info label="Lot No" value={viewing.lot_no} />
-              <Info label="Status" value={viewing.status} />
-              <Info label="Container" value={`${viewing.container_name} (${viewing.container_type})`} />
-              <Info label="Driver" value={`${viewing.driver_name || "—"} · ${viewing.driver_phone || "—"}`} />
-              <Info label="From" value={viewing.start_station} />
-              <Info label="To" value={viewing.end_station} />
-              <Info label="Dispatched By" value={viewing.dispatched_by || "—"} />
-              <Info label="Consignments" value={String(viewing.consignment_ids.length)} />
-              <div className="col-span-2"><Info label="Remarks" value={viewing.remarks || "—"} /></div>
+            <ShipmentView
+              shipment={viewing}
+              consignments={consignments.filter((c) => viewing.consignment_ids.includes(c.id))}
+              onView={(c) => setViewConsignment(c)}
+              onEdit={(c) => setEditConsignment(c)}
+              onDelete={removeConsignment}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Receipt viewer for shipment-consignments */}
+      <Dialog open={!!viewConsignment} onOpenChange={(o) => { if (!o) { setViewConsignment(null); zoomReset(); } }}>
+        <DialogContent className="w-[97vw] max-w-[1600px] max-h-[95vh] overflow-hidden p-4 sm:p-6 flex flex-col">
+          <DialogHeader>
+            <div className="flex flex-wrap items-center justify-between gap-2 pr-6">
+              <DialogTitle>Consignment Receipt</DialogTitle>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1 rounded-md border border-border bg-muted/40 px-1 py-0.5">
+                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={zoomOut} title="Zoom out"><ZoomOut className="h-4 w-4" /></Button>
+                  <span className="min-w-[3rem] text-center text-xs font-semibold tabular-nums">{Math.round(zoom * 100)}%</span>
+                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={zoomIn} title="Zoom in"><ZoomIn className="h-4 w-4" /></Button>
+                  <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={zoomReset} title="Reset zoom"><Maximize2 className="h-4 w-4" /></Button>
+                </div>
+                <Button size="sm" variant="outline" onClick={copyReceipt}><Copy className="mr-1 h-4 w-4" />Copy</Button>
+                <Button size="sm" variant="outline" onClick={downloadReceipt}><Download className="mr-1 h-4 w-4" />Download</Button>
+                <Button size="sm" variant="outline" onClick={() => { if (viewConsignment) { setEditConsignment(viewConsignment); setViewConsignment(null); } }}><Pencil className="mr-1 h-4 w-4" />Edit</Button>
+                <Button size="sm" variant="outline" onClick={() => window.print()}><Printer className="mr-1 h-4 w-4" />Print</Button>
+              </div>
             </div>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto rounded-md bg-muted/20 p-3">
+            {viewConsignment && <ConsignmentReceipt ref={receiptRef} c={viewConsignment} width={Math.round(BASE_W * zoom)} />}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit consignment from shipment view */}
+      <Dialog open={!!editConsignment} onOpenChange={(o) => { if (!o) setEditConsignment(null); }}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Edit Consignment</DialogTitle></DialogHeader>
+          {editConsignment && (
+            <ConsignmentForm
+              initialData={editConsignment}
+              onSaved={() => { setEditConsignment(null); load(); }}
+              onCancel={() => setEditConsignment(null)}
+            />
           )}
         </DialogContent>
       </Dialog>
@@ -242,6 +317,103 @@ function F({ label, children }: { label: string; children: React.ReactNode }) {
 }
 function Info({ label, value }: { label: string; value: string }) {
   return <div><div className="text-sm text-muted-foreground">{label}</div><div className="font-medium">{value}</div></div>;
+}
+
+function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
+  shipment: Shipment;
+  consignments: Consignment[];
+  onView: (c: Consignment) => void;
+  onEdit: (c: Consignment) => void;
+  onDelete: (c: Consignment) => void;
+}) {
+  const totals = consignments.reduce((acc, c) => {
+    acc.cbm += Number(c.cbm || 0);
+    acc.weight += Number(c.weight || 0);
+    acc.freight += Number(c.freight || 0);
+    acc.local_freight += Number(c.local_freight || 0);
+    acc.bill_charge += Number(c.bill_charge || 0);
+    acc.insurance += Number(c.insurance || 0);
+    acc.tax += Number(c.tax || 0);
+    acc.other += Number(c.packaging_fee || 0) + Number(c.loading_fee || 0) + Number(c.unloading_fee || 0);
+    acc.total += Number(c.grand_total || 0);
+    return acc;
+  }, { cbm: 0, weight: 0, freight: 0, local_freight: 0, bill_charge: 0, insurance: 0, tax: 0, other: 0, total: 0 });
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 text-base">
+        <Info label="Lot No" value={shipment.lot_no} />
+        <Info label="Status" value={shipment.status} />
+        <Info label="Container" value={`${shipment.container_name} (${shipment.container_type})`} />
+        <Info label="Driver" value={`${shipment.driver_name || "—"} · ${shipment.driver_phone || "—"}`} />
+        <Info label="From" value={shipment.start_station} />
+        <Info label="To" value={shipment.end_station} />
+        <Info label="Dispatched By" value={shipment.dispatched_by || "—"} />
+        <Info label="Consignments" value={String(shipment.consignment_ids.length)} />
+        <div className="col-span-2 md:col-span-4"><Info label="Remarks" value={shipment.remarks || "—"} /></div>
+      </div>
+
+      <div>
+        <div className="mb-2 text-base font-semibold text-primary">Consignments in this shipment</div>
+        <div className="overflow-auto rounded-lg border border-border">
+          <table className="w-full text-sm">
+            <thead className="bg-gradient-primary text-primary-foreground">
+              <tr className="text-left">
+                {["Date","Consignment No.","Brand","Description","Cartoon","CTN No.","CBM","Weight","Freight","Local Freight","Bill Charge","Insurance","Other Charges","Tax","Total","Remarks","Actions"].map((h) => (
+                  <th key={h} className="px-3 py-2 font-bold text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {consignments.length === 0 ? (
+                <tr><td colSpan={17} className="px-4 py-8 text-center text-muted-foreground">No consignments</td></tr>
+              ) : consignments.map((c) => {
+                const other = Number(c.packaging_fee || 0) + Number(c.loading_fee || 0) + Number(c.unloading_fee || 0);
+                return (
+                  <tr key={c.id} className="border-t border-border hover:bg-accent/30">
+                    <td className="px-3 py-2 whitespace-nowrap">{new Date(c.start_date).toLocaleDateString()}</td>
+                    <td className="px-3 py-2"><Badge variant="secondary" className="bg-primary/10 text-primary">{c.bill_no}</Badge></td>
+                    <td className="px-3 py-2 font-medium">{c.marka || "—"}</td>
+                    <td className="px-3 py-2 max-w-[220px] truncate" title={c.description || ""}>{c.description || "—"}</td>
+                    <td className="px-3 py-2 text-center">{c.cartoon}</td>
+                    <td className="px-3 py-2">{c.ctn_no || "—"}</td>
+                    <td className="px-3 py-2 text-center">{c.cbm}</td>
+                    <td className="px-3 py-2 text-center">{c.weight}</td>
+                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.freight || 0))}</td>
+                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.local_freight || 0))}</td>
+                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.bill_charge || 0))}</td>
+                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.insurance || 0))}</td>
+                    <td className="px-3 py-2 text-right">¥ {Math.round(other)}</td>
+                    <td className="px-3 py-2 text-right">¥ {Math.round(Number(c.tax || 0))}</td>
+                    <td className="px-3 py-2 text-right font-semibold">¥ {Math.round(Number(c.grand_total || 0))}</td>
+                    <td className="px-3 py-2 max-w-[180px] truncate" title={c.remarks || ""}>{c.remarks || "—"}</td>
+                    <td className="px-3 py-2"><ActionButtons onView={() => onView(c)} onEdit={() => onEdit(c)} onDelete={() => onDelete(c)} /></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            {consignments.length > 0 && (
+              <tfoot className="bg-muted font-semibold">
+                <tr>
+                  <td className="px-3 py-2" colSpan={6}>Totals</td>
+                  <td className="px-3 py-2 text-center">{totals.cbm.toFixed(2)}</td>
+                  <td className="px-3 py-2 text-center">{totals.weight.toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right">¥ {Math.round(totals.freight)}</td>
+                  <td className="px-3 py-2 text-right">¥ {Math.round(totals.local_freight)}</td>
+                  <td className="px-3 py-2 text-right">¥ {Math.round(totals.bill_charge)}</td>
+                  <td className="px-3 py-2 text-right">¥ {Math.round(totals.insurance)}</td>
+                  <td className="px-3 py-2 text-right">¥ {Math.round(totals.other)}</td>
+                  <td className="px-3 py-2 text-right">¥ {Math.round(totals.tax)}</td>
+                  <td className="px-3 py-2 text-right">¥ {Math.round(totals.total)}</td>
+                  <td colSpan={2}></td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default Shipments;
