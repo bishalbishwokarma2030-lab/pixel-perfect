@@ -41,9 +41,25 @@ const initial = {
   payment_status: "Unpaid", current_station: "",
 };
 
+const STATION_PREFIX: Record<string, string> = {
+  "Guangzhou": "GZ",
+  "Yiwu": "YW",
+  "Lhasa": "LH",
+  "Nylam (Khasa)": "NK",
+  "Nylam": "NY",
+  "Tatopani": "TP",
+  "Kerung": "KR",
+  "Kathmandu": "KTM",
+  "Shantou": "ST",
+  "Tatopani - Kerung": "TK",
+  "Kerung - Tatopani": "KT",
+};
+
 export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialData?: Consignment | null; onSaved: () => void; onCancel: () => void }) {
   const [stations, setStations] = useState<Station[]>([]);
   const [tab, setTab] = useState("basic");
+  const [billMiddle, setBillMiddle] = useState<string>("");
+  const [trackId, setTrackId] = useState<string>("");
   const [form, setForm] = useState<any>(() =>
     initialData
       ? {
@@ -57,6 +73,47 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
   const set = (k: string, v: any) => setForm((f: any) => ({ ...f, [k]: v }));
 
   useEffect(() => { api.stations.list().then(setStations).catch(() => {}); }, []);
+
+  // Initialize bill parts from existing data (edit mode) or generate next track id (create mode)
+  useEffect(() => {
+    if (initialData?.bill_no) {
+      const m = initialData.bill_no.match(/^([A-Z]+)\s*-\s*(.+?)(?:\s*\/\s*(\d+))?$/);
+      if (m) {
+        setBillMiddle(m[2] || "");
+        setTrackId(m[3] || "");
+      } else {
+        setBillMiddle(initialData.bill_no);
+        setTrackId("");
+      }
+    } else {
+      // Generate next ascending track id from existing consignments
+      api.consignments.list().then((list) => {
+        let max = 1000;
+        for (const c of list) {
+          const tm = (c.bill_no || "").match(/\/(\d+)$/);
+          if (tm) {
+            const n = parseInt(tm[1], 10);
+            if (!isNaN(n) && n > max) max = n;
+          }
+        }
+        // Add a small random increment so it stays ascending but not strictly sequential
+        const next = max + 1 + Math.floor(Math.random() * 5);
+        setTrackId(String(next));
+      }).catch(() => {
+        setTrackId(String(1001 + Math.floor(Math.random() * 100)));
+      });
+    }
+  }, [initialData]);
+
+  const billPrefix = STATION_PREFIX[form.start_station] || "";
+  const composedBillNo = useMemo(() => {
+    if (!billMiddle) return "";
+    const left = billPrefix ? `${billPrefix} - ${billMiddle}` : billMiddle;
+    return trackId ? `${left}/${trackId}` : left;
+  }, [billPrefix, billMiddle, trackId]);
+
+  // Keep form.bill_no in sync
+  useEffect(() => { set("bill_no", composedBillNo); }, [composedBillNo]);
 
   const insurance = useMemo(() => Number(form.value_of_goods || 0) * 0.003, [form.value_of_goods]);
 
@@ -93,11 +150,12 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
   const grandTotal = subTotal - advanceAmount;
 
   const save = async () => {
-    if (!form.bill_no) {
+    if (!billMiddle) {
       toast.error("Bill No. is required"); setTab("basic"); return;
     }
     const payload: any = {
       ...form,
+      bill_no: composedBillNo,
       start_station: form.start_station || "",
       end_station: form.end_station || "",
       marka: form.marka || "",
