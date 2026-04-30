@@ -206,7 +206,6 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
                   /{trackId || "…"}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Type the middle number(s). Use <span className="font-semibold">+</span> to add multiple consignment numbers (e.g. 2092920+9292856+204589). Prefix comes from Start Station; Track ID is auto-generated.</p>
             </F>
             <F label="Marka"><Input value={form.marka} onChange={(e) => set("marka", e.target.value)} placeholder="Consignment marka here…" /></F>
           </Section>
@@ -269,7 +268,7 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
       <TabsContent value="charges" className="mt-4">
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-4">
-            <F label="Freight (auto: rate × CBM/Weight)">
+            <F label="Freight">
               <Input type="number" value={calculatedFreight} readOnly className="bg-muted" />
             </F>
             <F label="Packaging Fee"><Input type="number" value={form.packaging_fee} onChange={(e) => set("packaging_fee", e.target.value)} /></F>
@@ -279,7 +278,7 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
             <F label="Loading Fee"><Input type="number" value={form.loading_fee} onChange={(e) => set("loading_fee", e.target.value)} /></F>
           </div>
           <div className="space-y-4">
-            <F label="Insurance (auto: 0.3% of Value of Goods)">
+            <F label="Insurance">
               <Input type="number" value={insurance.toFixed(2)} readOnly className="bg-muted" />
             </F>
             <F label="Unloading Fee"><Input type="number" value={form.unloading_fee} onChange={(e) => set("unloading_fee", e.target.value)} /></F>
