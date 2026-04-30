@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound.tsx";
 import Stations from "./pages/Stations.tsx";
 import Consignments from "./pages/Consignments.tsx";
 import Shipments from "./pages/Shipments.tsx";
+import DeliveryReceipts from "./pages/DeliveryReceipts.tsx";
 import { AppLayout } from "./components/AppLayout";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/stations" element={<Stations />} />
             <Route path="/consignments" element={<Consignments />} />
             <Route path="/shipments" element={<Shipments />} />
+            <Route path="/delivery-receipts" element={<DeliveryReceipts />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
