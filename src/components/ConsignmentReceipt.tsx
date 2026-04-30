@@ -53,7 +53,7 @@ export const ConsignmentReceipt = forwardRef<HTMLDivElement, { c: Consignment; w
         <div className="absolute left-0 top-0 origin-top-left" style={{ width: `${NATIVE_W}px`, height: `${NATIVE_H}px`, transform: `scale(${scale})` }}>
           <img src={receiptTemplate} alt="Consignment receipt template" className="absolute inset-0 h-full w-full select-none" draggable={false} />
 
-          <FillText className="left-[288px] top-[210px] w-[460px] text-[17px] font-semibold tracking-[0.2px]" value={text.billNo} />
+          <BillNoText value={text.billNo} />
           <FillText className="left-[284px] top-[290px] w-[464px] text-[17px] font-semibold" value={text.startDate} />
           <FillText className="left-[286px] top-[369px] w-[463px] text-[17px] font-semibold" value={text.marka} />
 
@@ -182,6 +182,33 @@ function EnHeader({ className, text }: { className: string; text: string }) {
 function FillText({ className, value }: { className: string; value: string }) {
   if (!value) return null;
   return <div className={`absolute text-center leading-none ${className}`}>{value}</div>;
+}
+
+function BillNoText({ value }: { value: string }) {
+  if (!value) return null;
+  // Cell box: left 288, top 210, width 460, height ~70 (between 195 label and 275 next label)
+  // Auto-shrink font size based on length so multi-consignment IDs wrap & fit within the cell
+  const len = value.length;
+  const fontSize = len > 60 ? 11 : len > 45 ? 12 : len > 32 ? 14 : 17;
+  return (
+    <div
+      className="absolute flex items-center justify-center text-center font-semibold"
+      style={{
+        left: 288,
+        top: 210,
+        width: 460,
+        height: 60,
+        fontSize: `${fontSize}px`,
+        lineHeight: 1.15,
+        wordBreak: "break-all",
+        overflowWrap: "anywhere",
+        whiteSpace: "normal",
+        padding: "2px 4px",
+      }}
+    >
+      {value}
+    </div>
+  );
 }
 
 function formatAmount(value: number | string | null | undefined) {
