@@ -420,7 +420,27 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
   onEdit: (c: Consignment) => void;
   onDelete: (c: Consignment) => void;
 }) {
-  const totals = consignments.reduce((acc, c) => {
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return consignments;
+    return consignments.filter((c) => [c.bill_no, c.marka, c.description, c.ctn_no, c.remarks]
+      .filter(Boolean).join(" ").toLowerCase().includes(q));
+  }, [consignments, search]);
+  const exportConsignments = () => {
+    if (!filtered.length) { toast.error("Nothing to export"); return; }
+    const rows = filtered.map((c) => ({
+      Date: new Date(c.start_date).toLocaleDateString(),
+      "Consignment No.": c.bill_no, Brand: c.marka, Description: c.description,
+      Cartoon: c.cartoon, "CTN No.": c.ctn_no, CBM: c.cbm, Weight: c.weight,
+      Freight: Number(c.freight || 0), "Local Freight": Number(c.local_freight || 0),
+      "Bill Charge": Number(c.bill_charge || 0), Insurance: Number(c.insurance || 0),
+      "Other Charges": Number(c.packaging_fee || 0) + Number(c.loading_fee || 0) + Number(c.unloading_fee || 0),
+      Tax: Number(c.tax || 0), Total: Number(c.grand_total || 0), Remarks: c.remarks,
+    }));
+    exportToExcel(rows, `shipment-${shipment.lot_no}-consignments-${new Date().toISOString().slice(0,10)}.xlsx`);
+  };
+  const totals = filtered.reduce((acc, c) => {
     acc.cbm += Number(c.cbm || 0);
     acc.weight += Number(c.weight || 0);
     acc.freight += Number(c.freight || 0);
@@ -448,7 +468,16 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
       </div>
 
       <div>
-        <div className="mb-2 text-base font-semibold text-primary">Consignments in this shipment</div>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="text-base font-semibold text-primary">Consignments in this shipment</div>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search consignments…" className="pl-7 h-9 w-64" />
+            </div>
+            <Button size="sm" variant="outline" onClick={exportConsignments}><FileDown className="mr-1 h-4 w-4" />Export</Button>
+          </div>
+        </div>
         <div className="overflow-auto rounded-lg border border-border max-h-[60vh]">
           <table className="w-full text-sm border-separate border-spacing-0">
             <thead className="bg-gradient-primary text-primary-foreground sticky top-0 z-30">
@@ -464,7 +493,9 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
             <tbody>
               {consignments.length === 0 ? (
                 <tr><td colSpan={17} className="px-4 py-8 text-center text-muted-foreground">No consignments</td></tr>
-              ) : consignments.map((c) => {
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={17} className="px-4 py-8 text-center text-muted-foreground">No matching consignments</td></tr>
+              ) : filtered.map((c) => {
                 const other = Number(c.packaging_fee || 0) + Number(c.loading_fee || 0) + Number(c.unloading_fee || 0);
                 return (
                   <tr key={c.id} className="group hover:bg-accent/30">
@@ -489,7 +520,7 @@ function ShipmentView({ shipment, consignments, onView, onEdit, onDelete }: {
                 );
               })}
             </tbody>
-            {consignments.length > 0 && (
+            {filtered.length > 0 && (
               <tfoot className="bg-muted font-semibold">
                 <tr>
                   <td className="px-3 py-2" colSpan={6}>Totals</td>
