@@ -170,6 +170,51 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_receipts: {
+        Row: {
+          client_email: string | null
+          client_name: string
+          client_phone: string
+          consignment_ids: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          receiver_email: string | null
+          receiver_name: string
+          receiver_phone: string
+          remarks: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_email?: string | null
+          client_name: string
+          client_phone: string
+          consignment_ids?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          receiver_email?: string | null
+          receiver_name: string
+          receiver_phone: string
+          remarks?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_email?: string | null
+          client_name?: string
+          client_phone?: string
+          consignment_ids?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          receiver_email?: string | null
+          receiver_name?: string
+          receiver_phone?: string
+          remarks?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shipments: {
         Row: {
           arrival_approved_by: string | null
