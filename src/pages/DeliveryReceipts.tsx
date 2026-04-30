@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { api, Consignment, DeliveryReceipt } from "@/lib/store";
+import adoLogo from "@/assets/ado-logo.png";
 
 type FormState = {
   consignment_ids: string[];
@@ -292,11 +293,7 @@ function ReceiptView({ d, consMap }: { d: DeliveryReceipt; consMap: Map<string, 
   return (
     <div className="bg-[#eaf4fa] p-8 text-black">
       <div className="flex flex-col items-center text-center">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-[#0f4a8a]">阿卓</span>
-          <span className="text-3xl font-extrabold tracking-wide text-[#0f4a8a]">ADO</span>
-          <span className="text-2xl font-bold text-[#0f4a8a]">སྒྲོ</span>
-        </div>
+        <img src={adoLogo} alt="ADO" className="h-16 w-auto object-contain" />
         <div className="mt-2 text-base font-semibold tracking-wide">THANK YOU FOR YOUR ORDER</div>
         <div className="text-xs text-amber-700">Please find attachment below your order information</div>
       </div>
