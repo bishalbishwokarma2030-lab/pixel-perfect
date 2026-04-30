@@ -76,6 +76,21 @@ export type Shipment = {
   updated_at: string;
 };
 
+export type DeliveryReceipt = {
+  id: string;
+  consignment_ids: string[];
+  client_name: string;
+  client_phone: string;
+  client_email: string | null;
+  receiver_name: string;
+  receiver_phone: string;
+  receiver_email: string | null;
+  remarks: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export const api = {
   stations: {
     list: async () => {
@@ -142,6 +157,27 @@ export const api = {
     },
     remove: async (id: string) => {
       const { error } = await supabase.from("shipments").delete().eq("id", id);
+      if (error) throw error;
+    },
+  },
+  deliveryReceipts: {
+    list: async () => {
+      const { data, error } = await supabase.from("delivery_receipts" as any).select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return ((data || []) as any[]).map((d) => ({ ...d, consignment_ids: d.consignment_ids || [] })) as DeliveryReceipt[];
+    },
+    create: async (d: Partial<DeliveryReceipt>) => {
+      const { data, error } = await supabase.from("delivery_receipts" as any).insert(d as any).select().single();
+      if (error) throw error;
+      return data as unknown as DeliveryReceipt;
+    },
+    update: async (id: string, d: Partial<DeliveryReceipt>) => {
+      const { data, error } = await supabase.from("delivery_receipts" as any).update(d as any).eq("id", id).select().single();
+      if (error) throw error;
+      return data as unknown as DeliveryReceipt;
+    },
+    remove: async (id: string) => {
+      const { error } = await supabase.from("delivery_receipts" as any).delete().eq("id", id);
       if (error) throw error;
     },
   },
