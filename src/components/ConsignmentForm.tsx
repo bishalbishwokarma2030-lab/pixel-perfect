@@ -191,7 +191,23 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
       <TabsContent value="basic" className="mt-4">
         <div className="grid gap-6 lg:grid-cols-2">
           <Section title="Basic Details">
-            <F label="Bill No. *"><Input value={form.bill_no} onChange={(e) => set("bill_no", e.target.value)} placeholder="eg. 23" /></F>
+            <F label="Bill No. *">
+              <div className="flex items-stretch rounded-md border border-input bg-background overflow-hidden">
+                <span className="flex items-center px-3 text-sm font-semibold bg-amber-50 text-amber-900 border-r border-input min-w-[64px] justify-center">
+                  {billPrefix ? `${billPrefix} -` : "—"}
+                </span>
+                <Input
+                  value={billMiddle}
+                  onChange={(e) => setBillMiddle(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder="eg. 2092920"
+                  className="border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                />
+                <span className="flex items-center px-3 text-sm font-semibold bg-emerald-50 text-emerald-900 border-l border-input">
+                  /{trackId || "…"}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Type only the middle number. Prefix comes from Start Station; Track ID is auto-generated.</p>
+            </F>
             <F label="Marka"><Input value={form.marka} onChange={(e) => set("marka", e.target.value)} placeholder="Consignment marka here…" /></F>
           </Section>
           <Section title="Client Details">
