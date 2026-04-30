@@ -198,15 +198,15 @@ export function ConsignmentForm({ initialData, onSaved, onCancel }: { initialDat
                 </span>
                 <Input
                   value={billMiddle}
-                  onChange={(e) => setBillMiddle(e.target.value.replace(/[^0-9]/g, ""))}
-                  placeholder="eg. 2092920"
+                  onChange={(e) => setBillMiddle(e.target.value.replace(/[^0-9+]/g, ""))}
+                  placeholder="eg. 2092920+9292856+204589"
                   className="border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
                 <span className="flex items-center px-3 text-sm font-semibold bg-emerald-50 text-emerald-900 border-l border-input">
                   /{trackId || "…"}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Type only the middle number. Prefix comes from Start Station; Track ID is auto-generated.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Type the middle number(s). Use <span className="font-semibold">+</span> to add multiple consignment numbers (e.g. 2092920+9292856+204589). Prefix comes from Start Station; Track ID is auto-generated.</p>
             </F>
             <F label="Marka"><Input value={form.marka} onChange={(e) => set("marka", e.target.value)} placeholder="Consignment marka here…" /></F>
           </Section>
